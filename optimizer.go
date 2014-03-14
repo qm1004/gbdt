@@ -11,18 +11,18 @@ const (
 )
 
 func FxGradient(y int, predict float32) float32 {
-	switch conf.losstype {
+	switch Conf.losstype {
 	case LEAST_SQUARE:
-		return y - predict
+		return float32(y)-predict
 	case LOG_LIKEHOOD:
-		return 2 * y / float32((1 + math.Exp(float64(2*float32(y)*predict))))
+		return 2 * float32(y) / float32((1 + math.Exp(float64(2*float32(y)*predict))))
 	}
-	return 2 * y / float32((1 + math.Exp(float64(2*float32(y)*predict))))
+	return 2 * float32(y) / float32((1 + math.Exp(float64(2*float32(y)*predict))))
 
 }
 
 func NodePredictValue(d []*MapSample, sample_sequence []int) float32 {
-	switch conf.losstype {
+	switch Conf.losstype {
 	case LEAST_SQUARE:
 		return LsOptimalValue(d, sample_sequence)
 	case LOG_LIKEHOOD:
@@ -72,34 +72,17 @@ func SameTarget(d []*MapSample, sample_sequence []int) bool {
 	return true
 }
 
-func CalculateVariance(d []*MapSample, sample_sequence []int) (variance float32){
-	var s,ss,total_weight float32=0.0,0.0,0.0
-	for _,k:=range sample_sequence {
-		s += float64(MapSample[k].target * MapSample[k].weight)
-		ss += float64(MapSample[k].target * MapSample[k].target * MapSample[k].weight)
-		total_weight += float64(MapSample[k].weight)
+func CalculateVariance(d []*MapSample, sample_sequence []int) (variance float32) {
+	var s, ss, total_weight float64 = 0.0, 0.0, 0.0
+	for _, k := range sample_sequence {
+		s += float64(d[k].target * d[k].weight)
+		ss += float64(d[k].target * d[k].target * d[k].weight)
+		total_weight += float64(d[k].weight)
 	}
 	if total_weight > 1 {
 		variance = float32(ss/total_weight - s*s/total_weight/total_weight)
 	} else {
 		variance = 0
 	}
+	return
 }
-
-var s, ss, total_weight float64 = 0.0, 0.0, 0.0
-	var variance1, variance2, variance3 float32 = 0.0, 0.0, 0.0
-	l = len(tuple_list)
-	for unknown < l && tuple_list[unknown].value == UNKNOWN_VALUE { //calculate variance of unknown value samples for this feature
-		s += float64(tuple_list[unknown].target * tuple_list[unknown].weight)
-		ss += float64(tuple_list[unknown].target * tuple_list[unknown].target * tuple_list[unknown].weight)
-		total_weight += float64(tuple_list[unknown].weight)
-		unknown++
-	}
-	if unknown == l {
-		return nil, false
-	}
-	if total_weight > 1 {
-		variance1 = float32(ss/total_weight - s*s/total_weight/total_weight)
-	} else {
-		variance1 = 0
-	}

@@ -2,8 +2,9 @@ package gbdt
 
 import (
 	"math"
-	"strings"
 	"strconv"
+	"strings"
+	"log"
 )
 
 type GBDT struct {
@@ -16,14 +17,15 @@ type GBDT struct {
 func NewGBDT() (gbdt *GBDT) {
 	gbdt = &GBDT{
 		trees:      nil,
-		tree_count: conf.tree_count,
-		shrinkage:  conf.shrinkage,
+		tree_count: Conf.tree_count,
+		shrinkage:  Conf.shrinkage,
 		bias:       0,
 	}
-	for i := 0; i < conf.tree_count; i++ {
+	for i := 0; i < Conf.tree_count; i++ {
 		tree := NewRegressionTree()
 		gbdt.trees = append(gbdt.trees, tree)
 	}
+	return
 }
 
 func (self *GBDT) Init(d *DataSet) {
@@ -34,31 +36,31 @@ func (self *GBDT) Init(d *DataSet) {
 		c += sample.weight
 	}
 	y_avg := s / c
-	if conf.losstype == LEAST_SQUARE {
+	if Conf.losstype == LEAST_SQUARE {
 		self.bias = y_avg
-	} else if conf.losstype == LOG_LIKIHOOD {
+	} else if Conf.losstype == LOG_LIKEHOOD {
 		self.bias = float32(math.Log(float64((1+y_avg)/(1-y_avg))) / 2.0)
 	}
-	self.trees = make([]*RegressionTree, conf.tree_count)
+	self.trees = make([]*RegressionTree, Conf.tree_count)
 }
 
 func (self *GBDT) Train(d *DataSet) {
-	var sample_number int = len(DataSet.samples)
-	if conf.data_sampling_ratio < 1 {
-		sample_number = int(conf.data_sampling_ratio * float32(len(DataSet.samples)))
+	var sample_number int = len(d.samples)
+	if Conf.data_sampling_ratio < 1 {
+		sample_number = int(Conf.data_sampling_ratio * float32(len(d.samples)))
 	}
-	self.Init(d, conf)
+	self.Init(d)
 
-	for i := 0; i < conf.tree_count; i++ {
-		if conf.data_sampling_ratio < 1 {
+	for i := 0; i < Conf.tree_count; i++ {
+		if Conf.data_sampling_ratio < 1 {
 			random_shuffle(d.samples, len(d.samples))
 		}
 
 		for j := 0; j < sample_number; j++ {
 			p := self.Predict(d.samples[j], i)
-			d.sampels[j].target = FxGradient(d.samples[j].label, p)
+			d.samples[j].target = FxGradient(d.samples[j].label, p)
 		}
-		if conf.debug {
+		if Conf.debug {
 			//cal auc
 			//cal loss
 		}
@@ -68,7 +70,7 @@ func (self *GBDT) Train(d *DataSet) {
 }
 
 func (self *GBDT) Predict(sample *Sample, n int) float32 {
-	if trees == nil {
+	if self.trees == nil {
 		return UNKNOWN_VALUE
 	}
 	r := self.bias
@@ -78,28 +80,33 @@ func (self *GBDT) Predict(sample *Sample, n int) float32 {
 	return r
 }
 
-func (self *GBDT) Save() string{
-	vs:=make([]string,0)
-	vs=append(vs,strings.FormatFloat(self.shrinkage,"f",32))
-	vs=append(vs,strings.FormatFloat(self.bias,"f",32))
+func (self *GBDT) Save() string {
+	vs := make([]string, 0)
+	vs = append(vs, strconv.FormatFloat(float64(self.shrinkage), 'f',4, 32))
+	vs = append(vs, strconv.FormatFloat(float64(self.bias), 'f', 4,32))
 	for i := 0; i < self.tree_count; i++ {
-		vs=append(vs,self.trees[i].Save())
+		vs = append(vs, self.trees[i].Save())
 	}
-	return strings.Join(vs,"\n;\n")
+	return strings.Join(vs, "\n;\n")
 }
 
 func (self *GBDT) Load(s string) {
-	self.trees=nil
-	var err error
-	vs:=strings.Split(s,"\n;\n")
-	self.tree_count = len(vs)-2
-	if self.shrinkage,err = strconv.ParseFloat(vs[0],32);err{
-		log.Fatal("shrinkage",err)
+	self.trees = nil
+	vs := strings.Split(s, "\n;\n")
+	self.tree_count = len(vs) - 2
+	if tempshrinkage, err:= strconv.ParseFloat(vs[0], 32); err!=nil {
+		log.Fatal("shrinkage", err)
+	}else{
+		self.shrinkage=float32(tempshrinkage)
 	}
-	if self.bias,err = strconv.ParseFloat(vs[1],32);err {
-		log.Fatal("bias",err)
+	
+	if tempbias, err := strconv.ParseFloat(vs[1], 32); err!=nil {
+		log.Fatal("bias", err)
+	}else{
+		self.bias=float32(tempbias)
 	}
-	self.trees=make([]*RegressionTree,self.tree_count)
+	
+	self.trees = make([]*RegressionTree, self.tree_count)
 
 	for i := 0; i < self.tree_count; i++ {
 		self.trees[i].Load(vs[i+2])

@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"reflect"
 	"time"
+	"math"
 )
 
 func random_shuffle(array interface{}, l int) bool {
@@ -28,21 +29,21 @@ func randInt(min int, max int) int {
 }
 
 func Float32Equal(a, b float32) bool {
-	val := float32(math.Abs(float32(a - b)))
+	val := float32(math.Abs(float64(a - b)))
 	if val < 1e-5 {
 		return true
 	}
 	return false
 }
 
-func JoinString(vs []string,sep string) string{
-	if len(vs)==0 {
+func JoinString(vs []string, sep string) string {
+	if len(vs) == 0 {
 		return ""
 	}
-	res:=vs[0]
+	res := vs[0]
 	for i := 1; i < len(vs); i++ {
-		res+=sep
-		res+=vs[i]
+		res += sep
+		res += vs[i]
 	}
 	return res
 }

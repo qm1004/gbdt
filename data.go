@@ -2,18 +2,19 @@ package gbdt
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
-	"fmt"
-	"strings"
 	"strconv"
-	"log"
+	"strings"
+	//"log"
 )
 
 const (
-	ITEMSPLIT = " "
+	ITEMSPLIT         = " "
 	FEATURESCORESPLIT = ":"
 )
+
 type Feature struct {
 	id    int
 	value float32
@@ -40,80 +41,82 @@ func (self *Sample) ToMapSample() *MapSample {
 	return m
 }
 
+type MapSample struct {
+	label    int
+	target   float32
+	weight   float32
+	feature map[int]float32
+}
+
+
 type DataSet struct {
 	samples []*Sample
 	//max_number int //feature dimensions
 }
-func (d *DataSet) FromString(line string,row int) {
-	itmes:=strings.Split(line,ITEMSPLIT)
-	if weight,err:=strconv.ParseFloat(items[0],32);err!=nil{
-		fmt.Println("weight paser err:",items[0],err,row)
+
+func (d *DataSet) FromString(line string, row int) {
+	items := strings.Split(line, ITEMSPLIT)
+	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
+		fmt.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)
-	}else{
-		d.samples[row].weight=float32(weight)
+	} else {
+		d.samples[row].weight = float32(weight)
 	}
 
-	if label,err:=strconv.Atoi(items[1]);err!=nil {
-		fmt.Println("label paser err:",items[1],err,row)
+	if label, err := strconv.Atoi(items[1]); err != nil {
+		fmt.Println("label paser err:", items[1], err, row)
 		os.Exit(1)
-	}else{
-		d.samples[row].label=label
+	} else {
+		d.samples[row].label = label
 	}
 
 	for i := 2; i < len(items); i++ {
-		kv := strings.Split(item[i], ":")
+		kv := strings.Split(items[i], ":")
 		fid, err := strconv.Atoi(kv[0])
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err",item[i],err,row)
+			fmt.Println("feature paser err", items[i], err, row)
 			os.Exit(2)
 		}
 		val, err := strconv.ParseFloat(kv[1], 32)
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err",item[i],err,row)
+			fmt.Println("feature paser err", items[i], err, row)
 			os.Exit(2)
 		}
-		d.samples[row].feature.id=fid
-		d.samples[row].feature.value=float32(val)
+		d.samples[row].feature=append(d.samples[row].feature,Feature{id:fid,value:float32(val)})
 	}
 }
 
-func (d *DataSet) LoadDataFromFile(path string,sample_number int, ignoreweight bool) {
-	f,err:=os.Open(path)
-	if err!=nil {
+func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignoreweight bool) {
+	f, err := os.Open(path)
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	d.samples:=make([]*Sample,sample_number)
+	d.samples = make([]*Sample, sample_number)
 	defer f.Close()
-	br:=bufio.NewReader(f)
-	row:=0
+	br := bufio.NewReader(f)
+	row := 0
 	for {
-		line,err:=br.ReadString('\n')
-		if err==io.EOF{
-			fmt.Printf("read %d rows\n",row)
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			fmt.Printf("read %d rows\n", row)
 			break
 		}
-		d.FromString(line,row)
+		d.FromString(line, row)
 		if ignoreweight {
-			d.samples[row].weight=1
+			d.samples[row].weight = 1
 		}
 		row++
 	}
 
 }
 
-func (d *DataSet) LoadDataFromFile(path string,sample_number int){
-	d.LoadDataFromFile(path,sample_number,false)
+func (d *DataSet) LoadDataFromFile(path string, sample_number int) {
+	d.LoadDataFromFileWeight(path, sample_number, false)
 }
 
-type MapSample struct {
-	label    int
-	target   float32
-	weight   float32
-	fealture map[int]float32
-}
 
 type Tuple struct {
 	value  float32
@@ -122,19 +125,19 @@ type Tuple struct {
 }
 
 type TupleList struct {
-	tulpelist []Tuple
+	tuplelist []Tuple
 }
 
 func (self *TupleList) Len() int {
-	return len(self.tulpelist)
+	return len(self.tuplelist)
 }
 
 func (self *TupleList) Swap(i, j int) {
-	self.tulpelist[i], self.tulpelist[j] = self.tulpelist[j], self.tulpelist[i]
+	self.tuplelist[i], self.tuplelist[j] = self.tuplelist[j], self.tuplelist[i]
 }
 
 func (self *TupleList) Less(i, j int) bool {
-	return self.tulpelist[i].value <= self.tulpelist[j].value
+	return self.tuplelist[i].value <= self.tuplelist[j].value
 }
 
 func (tp *TupleList) AddTuple(value, target, weight float32) {
@@ -143,12 +146,10 @@ func (tp *TupleList) AddTuple(value, target, weight float32) {
 		target: target,
 		weight: weight,
 	}
-	tp.tulpelist = append(tp.tulpelist, temp)
+	tp.tuplelist = append(tp.tuplelist, temp)
 }
 func NewTupleList() *TupleList {
 	tp := &TupleList{}
-	tp.tulpelist = []Tuple{}
+	tp.tuplelist = []Tuple{}
 	return tp
 }
-
-
