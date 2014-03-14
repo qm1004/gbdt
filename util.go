@@ -1,10 +1,10 @@
 package gbdt
 
 import (
+	"math"
 	"math/rand"
 	"reflect"
 	"time"
-	"math"
 )
 
 func random_shuffle(array interface{}, l int) bool {
@@ -14,7 +14,7 @@ func random_shuffle(array interface{}, l int) bool {
 		}
 		rand.Seed(time.Now().UTC().UnixNano())
 		for i := 0; i < l; i++ {
-			j := randInt(i, l)
+			j := RandInt(i, l)
 			tmp := slice.Index(i).Interface()
 			slice.Index(i).Set(slice.Index(j))
 			slice.Index(j).Set(reflect.ValueOf(tmp))
@@ -24,7 +24,7 @@ func random_shuffle(array interface{}, l int) bool {
 	return false
 }
 
-func randInt(min int, max int) int {
+func RandInt(min int, max int) int {
 	return min + rand.Intn(max-min)
 }
 
@@ -36,6 +36,9 @@ func Float32Equal(a, b float32) bool {
 	return false
 }
 
+func Float32Square(a float32) float32 {
+	return a * a
+}
 func JoinString(vs []string, sep string) string {
 	if len(vs) == 0 {
 		return ""

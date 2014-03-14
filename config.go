@@ -20,7 +20,7 @@ type Config struct {
 var Conf *Config
 
 func init() {
-	Conf=&Config{}
+	Conf = &Config{}
 	Conf.number_of_feature = 17
 	Conf.max_depth = 5
 	Conf.tree_count = 10

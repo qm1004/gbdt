@@ -42,12 +42,11 @@ func (self *Sample) ToMapSample() *MapSample {
 }
 
 type MapSample struct {
-	label    int
-	target   float32
-	weight   float32
+	label   int
+	target  float32
+	weight  float32
 	feature map[int]float32
 }
-
 
 type DataSet struct {
 	samples []*Sample
@@ -55,14 +54,17 @@ type DataSet struct {
 }
 
 func (d *DataSet) FromString(line string, row int) {
+	//fmt.Println("line:",line)
 	items := strings.Split(line, ITEMSPLIT)
+	//fmt.Println("items:",items,items[0],items[1],len(items))
+	d.samples[row] = &Sample{}
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
 		fmt.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)
 	} else {
+		//fmt.Println("samples:",len(d.samples))
 		d.samples[row].weight = float32(weight)
 	}
-
 	if label, err := strconv.Atoi(items[1]); err != nil {
 		fmt.Println("label paser err:", items[1], err, row)
 		os.Exit(1)
@@ -71,20 +73,20 @@ func (d *DataSet) FromString(line string, row int) {
 	}
 
 	for i := 2; i < len(items); i++ {
-		kv := strings.Split(items[i], ":")
+		kv := strings.Split(items[i], FEATURESCORESPLIT)
 		fid, err := strconv.Atoi(kv[0])
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err", items[i], err, row)
+			fmt.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
 		val, err := strconv.ParseFloat(kv[1], 32)
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err", items[i], err, row)
+			fmt.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
-		d.samples[row].feature=append(d.samples[row].feature,Feature{id:fid,value:float32(val)})
+		d.samples[row].feature = append(d.samples[row].feature, Feature{id: fid, value: float32(val)})
 	}
 }
 
@@ -104,19 +106,20 @@ func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignorew
 			fmt.Printf("read %d rows\n", row)
 			break
 		}
+		line = strings.TrimSpace(line)
 		d.FromString(line, row)
 		if ignoreweight {
 			d.samples[row].weight = 1
 		}
 		row++
 	}
+	fmt.Println("load data done!", len(d.samples), d.samples[0])
 
 }
 
 func (d *DataSet) LoadDataFromFile(path string, sample_number int) {
 	d.LoadDataFromFileWeight(path, sample_number, false)
 }
-
 
 type Tuple struct {
 	value  float32

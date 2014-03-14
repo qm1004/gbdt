@@ -189,12 +189,12 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 	for fid, tuple_list := range feature_tuple_list {      //find the best feature to split Node with concurrency
 		wg.Add(1) //goroutine counter add 1
 		go func() {
-			defer wg.Done() //goroutine counter minus 1 before function return
 			sort.Sort(tuple_list)
 			feature_split_info, ok := self.GetFeatureSplitValue(fid, tuple_list)
 			if ok {
 				chan_feature_split <- feature_split_info
 			}
+			wg.Done()  //goroutine counter minus 1 when function return
 		}()
 	}
 	wg.Wait() //Wait blocks until the WaitGroup counter is zero
@@ -339,13 +339,13 @@ func (self *RegressionTree) Save() string {
 		line += "\t"
 		line += strconv.Itoa(node.feature_split.id)
 		line += "\t"
-		line += strconv.FormatFloat(float64(node.feature_split.value), 'f',4, 32)
+		line += strconv.FormatFloat(float64(node.feature_split.value), 'f', 4, 32)
 		line += "\t"
 		line += strconv.FormatBool(node.isleaf)
 		line += "\t"
-		line += strconv.FormatFloat(float64(node.pred), 'f',4, 32)
+		line += strconv.FormatFloat(float64(node.pred), 'f', 4, 32)
 		line += "\t"
-		line += strconv.FormatFloat(float64(node.variance), 'f',4, 32)
+		line += strconv.FormatFloat(float64(node.variance), 'f', 4, 32)
 		line += "\t"
 		line += strconv.Itoa(node.depth)
 		line += "\t"
@@ -365,7 +365,7 @@ func (self *RegressionTree) Save() string {
 }
 
 func (self *RegressionTree) SaveNodePos(node *Node, queue *list.List, position_map *map[*Node]int) {
-	if node==nil {
+	if node == nil {
 		return
 	}
 	queue.PushBack(node)
@@ -394,60 +394,60 @@ func (self *RegressionTree) Load(s string) {
 		items := strings.Split(vs[i], "\t")
 		node := &Node{}
 		node.child = make([]*Node, CHILDSIZE)
-		
-		if  id,err := strconv.ParseInt(items[1], 10, 0); err !=nil{
+
+		if id, err := strconv.ParseInt(items[1], 10, 0); err != nil {
 			log.Fatal("feature_split.id", err)
-		}else{
-			node.feature_split.id=int(id)
+		} else {
+			node.feature_split.id = int(id)
 		}
 
-		if  value,err := strconv.ParseFloat(items[2], 32); err!=nil{
+		if value, err := strconv.ParseFloat(items[2], 32); err != nil {
 			log.Fatal("feature_split.value", err)
-		}else{
-			node.feature_split.value=float32(value)
+		} else {
+			node.feature_split.value = float32(value)
 		}
 
-		if isleaf, err := strconv.ParseBool(items[3]); err!=nil {
+		if isleaf, err := strconv.ParseBool(items[3]); err != nil {
 			log.Fatal("isleaf", err)
-		}else{
-			node.isleaf=isleaf
+		} else {
+			node.isleaf = isleaf
 		}
 
-		if pred,err := strconv.ParseFloat(items[4], 32); err!=nil {
+		if pred, err := strconv.ParseFloat(items[4], 32); err != nil {
 			log.Fatal("pred", err)
-		}else{
-			node.pred=float32(pred)
+		} else {
+			node.pred = float32(pred)
 		}
 
-		if variance, err := strconv.ParseFloat(items[5], 32); err!=nil {
+		if variance, err := strconv.ParseFloat(items[5], 32); err != nil {
 			log.Fatal("variance", err)
-		}else{
-			node.variance=float32(variance)
-		}	
-
-		if depth, err := strconv.ParseInt(items[6], 10, 0); err!=nil {
-			log.Fatal("depth", err)
-		}else{
-			node.depth=int(depth)
+		} else {
+			node.variance = float32(variance)
 		}
-		if sample_count, err := strconv.ParseInt(items[7], 10, 0); err!=nil {
+
+		if depth, err := strconv.ParseInt(items[6], 10, 0); err != nil {
+			log.Fatal("depth", err)
+		} else {
+			node.depth = int(depth)
+		}
+		if sample_count, err := strconv.ParseInt(items[7], 10, 0); err != nil {
 			log.Fatal("sample_count", err)
-		}else{
-			node.sample_count=int(sample_count)
+		} else {
+			node.sample_count = int(sample_count)
 		}
 		nodes = append(nodes, node)
 
-		if lt, err := strconv.ParseInt(items[8], 10, 0); err!=nil {
+		if lt, err := strconv.ParseInt(items[8], 10, 0); err != nil {
 			log.Fatal("left", err)
 		} else {
 			left = append(left, int(lt))
 		}
-		if rt, err := strconv.ParseInt(items[9], 10, 0); err!=nil {
+		if rt, err := strconv.ParseInt(items[9], 10, 0); err != nil {
 			log.Fatal("right", err)
 		} else {
 			right = append(right, int(rt))
 		}
-		if un, err := strconv.ParseInt(items[10], 10, 0); err!=nil {
+		if un, err := strconv.ParseInt(items[10], 10, 0); err != nil {
 			log.Fatal("unknown", err)
 		} else {
 			unknown = append(unknown, int(un))

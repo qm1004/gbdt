@@ -13,7 +13,7 @@ const (
 func FxGradient(y int, predict float32) float32 {
 	switch Conf.losstype {
 	case LEAST_SQUARE:
-		return float32(y)-predict
+		return float32(y) - predict
 	case LOG_LIKEHOOD:
 		return 2 * float32(y) / float32((1 + math.Exp(float64(2*float32(y)*predict))))
 	}
