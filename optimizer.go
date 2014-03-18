@@ -14,7 +14,7 @@ const (
 )
 
 func FxGradient(y int, predict float32) float32 {
-	switch Conf.losstype {
+	switch Conf.Losstype {
 	case LEAST_SQUARE:
 		return float32(y) - predict
 	case LOG_LIKEHOOD:
@@ -25,7 +25,7 @@ func FxGradient(y int, predict float32) float32 {
 }
 
 func NodePredictValue(d []*MapSample, sample_sequence []int) float32 {
-	switch Conf.losstype {
+	switch Conf.Losstype {
 	case LEAST_SQUARE:
 		return LsOptimalValue(d, sample_sequence)
 	case LOG_LIKEHOOD:

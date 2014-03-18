@@ -23,11 +23,11 @@ type GBDT struct {
 func NewGBDT() (gbdt *GBDT) {
 	gbdt = &GBDT{
 		trees:      make([]*RegressionTree, 0),
-		tree_count: Conf.tree_count,
-		shrinkage:  Conf.shrinkage,
+		tree_count: Conf.Tree_count,
+		shrinkage:  Conf.Shrinkage,
 		bias:       0,
 	}
-	for i := 0; i < Conf.tree_count; i++ {
+	for i := 0; i < Conf.Tree_count; i++ {
 		tree := NewRegressionTree()
 		gbdt.trees = append(gbdt.trees, tree)
 	}
@@ -46,32 +46,32 @@ func (self *GBDT) Init(d *DataSet) {
 		i++
 	}
 	y_avg := s / c
-	if Conf.losstype == LEAST_SQUARE {
+	if Conf.Losstype == LEAST_SQUARE {
 		self.bias = y_avg
-	} else if Conf.losstype == LOG_LIKEHOOD {
+	} else if Conf.Losstype == LOG_LIKEHOOD {
 		self.bias = float32(math.Log(float64((1+y_avg)/(1-y_avg))) / 2.0)
 	}
-	//self.trees = make([]*RegressionTree, Conf.tree_count)
+	//self.trees = make([]*RegressionTree, Conf.Tree_count)
 }
 
 func (self *GBDT) Train(d *DataSet) {
 
 	var sample_number int = len(d.samples)
-	if Conf.data_sampling_ratio < 1 {
-		sample_number = int(Conf.data_sampling_ratio * float32(len(d.samples)))
+	if Conf.Data_sampling_ratio < 1 {
+		sample_number = int(Conf.Data_sampling_ratio * float32(len(d.samples)))
 	}
 	self.Init(d)
 
-	for i := 0; i < Conf.tree_count; i++ {
+	for i := 0; i < Conf.Tree_count; i++ {
 		fmt.Printf("iteration:%d ", i)
-		if Conf.data_sampling_ratio < 1 {
+		if Conf.Data_sampling_ratio < 1 {
 			random_shuffle(d.samples, len(d.samples))
 		}
 		for j := 0; j < sample_number; j++ {
 			p := self.Predict(d.samples[j], i)
 			d.samples[j].target = FxGradient(d.samples[j].label, p)
 		}
-		if Conf.debug {
+		if Conf.Debug {
 			//cal auc
 
 			//cal loss

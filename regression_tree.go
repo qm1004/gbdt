@@ -54,8 +54,8 @@ type FeatureSplitInfo struct {
 func NewRegressionTree() *RegressionTree {
 	return &RegressionTree{
 		root:          nil,
-		max_depth:     Conf.max_depth,
-		min_leaf_size: Conf.min_leaf_size,
+		max_depth:     Conf.Max_depth,
+		min_leaf_size: Conf.Min_leaf_size,
 	}
 }
 
@@ -74,16 +74,16 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 	}
 
 	//feature sampling
-	featureid_list := make([]int, Conf.number_of_feature)
+	featureid_list := make([]int, Conf.Number_of_feature)
 	sampled_feature := make(map[int]bool)
 	for i := 0; i < len(featureid_list); i++ {
 		featureid_list[i] = i
 		sampled_feature[i] = false
 	}
-	if Conf.feature_sampling_ratio < 1 {
+	if Conf.Feature_sampling_ratio < 1 {
 		random_shuffle(featureid_list, len(featureid_list)) //sample features for fitting tree
 	}
-	k := int(Conf.feature_sampling_ratio * float32(Conf.number_of_feature))
+	k := int(Conf.Feature_sampling_ratio * float32(Conf.Number_of_feature))
 	for i := 0; i < k; i++ {
 		sampled_feature[featureid_list[i]] = true
 	}
@@ -171,7 +171,7 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 	feature_tuple_list := make(map[int]*TupleList)
 
 	for _, index := range sample_sequence { //build index for feature to samples
-		known_valued_feature := make([]bool, Conf.number_of_feature) //this sample has specific feature
+		known_valued_feature := make([]bool, Conf.Number_of_feature) //this sample has specific feature
 		for fid, fvalue := range d[index].feature {
 			if val, ok := sampled_feature[fid]; ok && val == true {
 
