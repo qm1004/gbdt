@@ -25,13 +25,16 @@ func init() {
 	Conf.max_depth = 5
 	Conf.tree_count = 10
 	Conf.shrinkage = 0.1
-	Conf.feature_sampling_ratio = 1.0
-	Conf.data_sampling_ratio = 0.6
-	Conf.min_leaf_size = 100
+	Conf.feature_sampling_ratio = 1
+	Conf.data_sampling_ratio = 0.7
+	Conf.min_leaf_size = 200
 	Conf.losstype = LOG_LIKEHOOD
-	Conf.debug = true
+	Conf.debug = false
 }
 
+func (Conf *Config) GetTreecount()int {
+	return Conf.tree_count
+}
 func (Conf *Config) String() string {
 	s := "number_of_feature:" + fmt.Sprintf("%v\n", Conf.number_of_feature)
 	s += "max_depth:" + fmt.Sprintf("%v\n", Conf.max_depth)

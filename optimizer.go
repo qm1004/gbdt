@@ -1,9 +1,12 @@
 package gbdt
 
 import (
+	"fmt"
 	"log"
 	"math"
 )
+
+var _ = fmt.Println
 
 const (
 	LOG_LIKEHOOD = 1
@@ -59,8 +62,13 @@ func LsOptimalValue(d []*MapSample, sample_sequence []int) float32 {
 	return val1 / val2
 }
 
+func LogitCtr(f float32) float32{
+	return 1.0/(1.0+float32(math.Exp(-2.0*float64(f))))
+}
+
 func SameTarget(d []*MapSample, sample_sequence []int) bool {
-	if len(sample_sequence) == 0 || len(sample_sequence) < len(d) {
+	if len(sample_sequence) == 0 || len(sample_sequence) > len(d) {
+		fmt.Println(len(sample_sequence))
 		log.Fatal("out of index sample_sequence")
 	}
 	var val float32 = d[sample_sequence[0]].target
@@ -80,7 +88,8 @@ func CalculateVariance(d []*MapSample, sample_sequence []int) (variance float32)
 		total_weight += float64(d[k].weight)
 	}
 	if total_weight > 1 {
-		variance = float32(ss/total_weight - s*s/total_weight/total_weight)
+		//variance = float32(ss/total_weight - s*s/total_weight/total_weight)
+		variance = float32(ss - s*s/total_weight)
 	} else {
 		variance = 0
 	}

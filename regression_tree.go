@@ -2,13 +2,20 @@ package gbdt
 
 import (
 	"container/list"
+	"fmt"
 	"log"
 	"math"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
+
+var _ = os.Exit
+var _ = fmt.Println
+var _ =time.Now
 
 const (
 	LEFT          = 0
@@ -185,24 +192,27 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 	var min_variance float32 = math.MaxFloat32
 
 	var wg sync.WaitGroup
-	chan_feature_split := make(chan *FeatureSplitInfo, 10) //channel length
-	for fid, tuple_list := range feature_tuple_list {      //find the best feature to split Node with concurrency
+	chan_feature_split := make(chan *FeatureSplitInfo, len(feature_tuple_list)) //channel length
+	for fid, t := range feature_tuple_list {                                    //find the best feature to split Node with
 		wg.Add(1) //goroutine counter add 1
-		go func() {
-			sort.Sort(tuple_list)
-			feature_split_info, ok := self.GetFeatureSplitValue(fid, tuple_list)
+		go func(id int, tl *TupleList) {
+			sort.Sort(tl)
+			feature_split_info, ok := self.GetFeatureSplitValue(id, tl)
 			if ok {
 				chan_feature_split <- feature_split_info
 			}
-			wg.Done()  //goroutine counter minus 1 when function return
-		}()
+			wg.Done() //goroutine counter minus 1 when function return
+		}(fid, t)
 	}
+
 	wg.Wait() //Wait blocks until the WaitGroup counter is zero
 	close(chan_feature_split)
 	for v := range chan_feature_split {
 		if v != nil {
 			temp_feature_split := v
+			//fmt.Println("fid:",temp_feature_split.feature_split,"variance:",temp_feature_split.variance)
 			if min_variance > temp_feature_split.variance {
+				//fmt.Println("depth:",node.depth,"feature_split:",temp_feature_split.feature_split)
 				min_variance = temp_feature_split.variance
 				node.feature_split = temp_feature_split.feature_split
 			}
@@ -220,6 +230,7 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 	var s, ss, total_weight float64 = 0.0, 0.0, 0.0
 	var variance1, variance2, variance3 float32 = 0.0, 0.0, 0.0
 	l := len(t.tuplelist)
+	//fmt.Println("go:",fid,l)
 	for unknown < l && t.tuplelist[unknown].value == UNKNOWN_VALUE { //calculate variance of unknown value samples for this feature
 		s += float64(t.tuplelist[unknown].target * t.tuplelist[unknown].weight)
 		ss += float64(t.tuplelist[unknown].target * t.tuplelist[unknown].target * t.tuplelist[unknown].weight)
@@ -230,12 +241,14 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		return nil, false
 	}
 	if total_weight > 1 {
-		variance1 = float32(ss/total_weight - s*s/total_weight/total_weight)
+		//variance1 = float32(ss/total_weight - s*s/total_weight/total_weight)
+		variance1 = float32(ss - s*s/total_weight)
 	} else {
 		variance1 = 0
 	}
 	if variance1 < 0 {
-		log.Fatal("variance1<0!!")
+		//log.Fatal("variance1<0!!")
+		fmt.Println("variance1<0 for fid=", fid)
 		variance1 = 0
 	}
 	s, ss, total_weight = 0, 0, 0
@@ -266,22 +279,24 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		}
 
 		if left_total_weight > 1 {
-			variance2 = float32(lss/left_total_weight - ls*ls/left_total_weight/left_total_weight)
+			//variance2 = float32(lss/left_total_weight - ls*ls/left_total_weight/left_total_weight)
+			variance2 = float32(lss - ls*ls/left_total_weight)
 		} else {
 			variance2 = 0
 		}
 		if variance2 < 0 {
-			log.Fatal("variance2<0!!")
+			//fmt.Println("variance2<0 for i=", i)
 			variance2 = 0
 		}
 
 		if right_total_weight > 1 {
-			variance3 = float32(rss/right_total_weight - rs*rs/right_total_weight/right_total_weight)
+			//variance3 = float32(rss/right_total_weight - rs*rs/right_total_weight/right_total_weight)
+			variance3 = float32(rss - rs*rs/right_total_weight)
 		} else {
 			variance3 = 0
 		}
 		if variance3 < 0 {
-			log.Fatal("variance3<0!!")
+			//fmt.Println("variance3<0 for i=", i)
 			variance3 = 0
 		}
 
@@ -297,6 +312,10 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		feature_split: Feature{id: fid, value: split_value},
 		variance:      local_min_variance,
 	}
+	/*if local_min_variance != math.MaxFloat32 {
+		return feature_split_info
+	}
+	return nil */
 	return feature_split_info, local_min_variance != math.MaxFloat32
 }
 
@@ -328,7 +347,7 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 func (self *RegressionTree) Save() string {
 	queue := list.New()
 	position_map := make(map[*Node]int)
-	self.SaveNodePos(self.root, queue, &position_map)
+	self.SaveNodePos(self.root, queue, position_map)
 	if queue.Len() == 0 {
 		return ""
 	}
@@ -352,8 +371,8 @@ func (self *RegressionTree) Save() string {
 		line += strconv.Itoa(node.sample_count)
 		for i := 0; i < CHILDSIZE; i++ {
 			line += "\t"
-			if node.child[i] != nil {
-				line += strconv.Itoa(position_map[node])
+			if node.child != nil && node.child[i] != nil {
+				line += strconv.Itoa(position_map[node.child[i]])
 			} else {
 				line += "-1"
 			}
@@ -364,18 +383,20 @@ func (self *RegressionTree) Save() string {
 
 }
 
-func (self *RegressionTree) SaveNodePos(node *Node, queue *list.List, position_map *map[*Node]int) {
+func (self *RegressionTree) SaveNodePos(node *Node, queue *list.List, position_map map[*Node]int) {
 	if node == nil {
 		return
 	}
 	queue.PushBack(node)
+	position_map[node] = queue.Len() - 1
 	for e := queue.Front(); e != nil; e = e.Next() {
 		temp_node := e.Value.(*Node)
 		if temp_node != nil {
-			(*position_map)[temp_node] = queue.Len() - 1
 			for i := 0; i < CHILDSIZE; i++ {
-				if temp_node.child[i] != nil {
+				if temp_node.child != nil && temp_node.child[i] != nil {
 					queue.PushBack(temp_node.child[i])
+					position_map[temp_node.child[i]] = queue.Len() - 1
+
 				}
 			}
 

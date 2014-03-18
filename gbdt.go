@@ -7,8 +7,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
+var _ = time.Now
 var _ = os.Exit
 
 type GBDT struct {
@@ -65,7 +67,6 @@ func (self *GBDT) Train(d *DataSet) {
 		if Conf.data_sampling_ratio < 1 {
 			random_shuffle(d.samples, len(d.samples))
 		}
-
 		for j := 0; j < sample_number; j++ {
 			p := self.Predict(d.samples[j], i)
 			d.samples[j].target = FxGradient(d.samples[j].label, p)
@@ -83,7 +84,10 @@ func (self *GBDT) Train(d *DataSet) {
 			fmt.Println("rmse:", math.Sqrt(s/c))
 
 		}
+		start := time.Now()
 		self.trees[i].Fit(d, sample_number)
+		latency := time.Since(start)
+		fmt.Println("latency:", latency)
 	}
 
 }
@@ -128,6 +132,7 @@ func (self *GBDT) Load(s string) {
 	self.trees = make([]*RegressionTree, self.tree_count)
 
 	for i := 0; i < self.tree_count; i++ {
+		self.trees[i]=NewRegressionTree()
 		self.trees[i].Load(vs[i+2])
 	}
 

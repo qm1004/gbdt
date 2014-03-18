@@ -28,6 +28,10 @@ type Sample struct {
 	weight  float32
 }
 
+func (self *Sample) GetLabel()int {
+	return self.label
+}
+
 func (self *Sample) ToMapSample() *MapSample {
 	m := &MapSample{
 		label:   self.label,
@@ -51,6 +55,10 @@ type MapSample struct {
 type DataSet struct {
 	samples []*Sample
 	//max_number int //feature dimensions
+}
+
+func (d *DataSet) GetSamples()[]*Sample {
+	return d.samples
 }
 
 func (d *DataSet) FromString(line string, row int) {
@@ -113,7 +121,7 @@ func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignorew
 		}
 		row++
 	}
-	fmt.Println("load data done!", len(d.samples), d.samples[0])
+	//fmt.Println("load data done!", len(d.samples), d.samples[0])
 
 }
 
