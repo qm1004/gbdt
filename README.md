@@ -3,8 +3,7 @@ gbdt
 
 GBDT:Gradient Boosting Decision Tree implemented by golang
 
-config.go
-====
+#Parameter
 All gbdt parameter define in config.go.
 Number_of_feature:Feature dimensions.eg:In example/train.data,there are 17 different features.
 Max_depth:The maximal depth of the tree. 
