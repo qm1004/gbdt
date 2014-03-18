@@ -1,7 +1,8 @@
 gbdt
 ====
 
-GBDT:Gradient Boosting Decision Tree implemented by golang
+GBDT:Gradient Boosting Decision Tree implemented by golang.<br/>
+Concurrency:Implementing local cocurrent with goroutine when building single tree at each iteration.<br/>
 
 #Parameter
 All gbdt parameter define in config.go.
