@@ -132,7 +132,7 @@ func (self *GBDT) Load(s string) {
 	self.trees = make([]*RegressionTree, self.tree_count)
 
 	for i := 0; i < self.tree_count; i++ {
-		self.trees[i]=NewRegressionTree()
+		self.trees[i] = NewRegressionTree()
 		self.trees[i].Load(vs[i+2])
 	}
 

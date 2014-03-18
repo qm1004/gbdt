@@ -32,7 +32,7 @@ func init() {
 	Conf.debug = false
 }
 
-func (Conf *Config) GetTreecount()int {
+func (Conf *Config) GetTreecount() int {
 	return Conf.tree_count
 }
 func (Conf *Config) String() string {

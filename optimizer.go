@@ -62,8 +62,8 @@ func LsOptimalValue(d []*MapSample, sample_sequence []int) float32 {
 	return val1 / val2
 }
 
-func LogitCtr(f float32) float32{
-	return 1.0/(1.0+float32(math.Exp(-2.0*float64(f))))
+func LogitCtr(f float32) float32 {
+	return 1.0 / (1.0 + float32(math.Exp(-2.0*float64(f))))
 }
 
 func SameTarget(d []*MapSample, sample_sequence []int) bool {

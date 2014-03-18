@@ -15,7 +15,7 @@ import (
 
 var _ = os.Exit
 var _ = fmt.Println
-var _ =time.Now
+var _ = time.Now
 
 const (
 	LEFT          = 0
@@ -210,9 +210,7 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 	for v := range chan_feature_split {
 		if v != nil {
 			temp_feature_split := v
-			//fmt.Println("fid:",temp_feature_split.feature_split,"variance:",temp_feature_split.variance)
 			if min_variance > temp_feature_split.variance {
-				//fmt.Println("depth:",node.depth,"feature_split:",temp_feature_split.feature_split)
 				min_variance = temp_feature_split.variance
 				node.feature_split = temp_feature_split.feature_split
 			}
@@ -230,7 +228,6 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 	var s, ss, total_weight float64 = 0.0, 0.0, 0.0
 	var variance1, variance2, variance3 float32 = 0.0, 0.0, 0.0
 	l := len(t.tuplelist)
-	//fmt.Println("go:",fid,l)
 	for unknown < l && t.tuplelist[unknown].value == UNKNOWN_VALUE { //calculate variance of unknown value samples for this feature
 		s += float64(t.tuplelist[unknown].target * t.tuplelist[unknown].weight)
 		ss += float64(t.tuplelist[unknown].target * t.tuplelist[unknown].target * t.tuplelist[unknown].weight)
@@ -241,13 +238,11 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		return nil, false
 	}
 	if total_weight > 1 {
-		//variance1 = float32(ss/total_weight - s*s/total_weight/total_weight)
 		variance1 = float32(ss - s*s/total_weight)
 	} else {
 		variance1 = 0
 	}
 	if variance1 < 0 {
-		//log.Fatal("variance1<0!!")
 		fmt.Println("variance1<0 for fid=", fid)
 		variance1 = 0
 	}
@@ -279,7 +274,6 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		}
 
 		if left_total_weight > 1 {
-			//variance2 = float32(lss/left_total_weight - ls*ls/left_total_weight/left_total_weight)
 			variance2 = float32(lss - ls*ls/left_total_weight)
 		} else {
 			variance2 = 0
@@ -290,13 +284,11 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		}
 
 		if right_total_weight > 1 {
-			//variance3 = float32(rss/right_total_weight - rs*rs/right_total_weight/right_total_weight)
 			variance3 = float32(rss - rs*rs/right_total_weight)
 		} else {
 			variance3 = 0
 		}
 		if variance3 < 0 {
-			//fmt.Println("variance3<0 for i=", i)
 			variance3 = 0
 		}
 
@@ -312,10 +304,7 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		feature_split: Feature{id: fid, value: split_value},
 		variance:      local_min_variance,
 	}
-	/*if local_min_variance != math.MaxFloat32 {
-		return feature_split_info
-	}
-	return nil */
+
 	return feature_split_info, local_min_variance != math.MaxFloat32
 }
 

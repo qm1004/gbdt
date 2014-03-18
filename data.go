@@ -28,7 +28,7 @@ type Sample struct {
 	weight  float32
 }
 
-func (self *Sample) GetLabel()int {
+func (self *Sample) GetLabel() int {
 	return self.label
 }
 
@@ -57,7 +57,7 @@ type DataSet struct {
 	//max_number int //feature dimensions
 }
 
-func (d *DataSet) GetSamples()[]*Sample {
+func (d *DataSet) GetSamples() []*Sample {
 	return d.samples
 }
 
