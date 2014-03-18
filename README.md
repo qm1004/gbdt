@@ -7,6 +7,10 @@ GBDT:Gradient Boosting Decision Tree implemented by golang.<br/>
 Concurrency:Implementing local cocurrent with goroutine when building single tree at each iteration.<br/>
 Support missing feature value.Every node in the tree has a child named "UNKNOWN VALUE".<br/> 
 
+#Data format
+1 1 0:1.1446 1:2 2:35 3:0 4:206.0 ....<br/>
+weight label featureid:feature_value....<br/>
+
 #Parameter
 All gbdt parameter define in config.go.
 
