@@ -28,7 +28,23 @@ type Sample struct {
 	weight  float32
 }
 
-func (self *Sample) GetLabel() int {
+func (self *Sample) FindFeature(id int) (int,bool){
+	l:=0
+	h:=len(self.feature)-1
+	for l<=h {
+		index:=(l+h)/2
+		if id==self.feature[index].id{
+			return index,true
+		}else if id>self.feature[index].id{
+			l=index+1
+		}else{
+			h=index-1
+		}
+	}
+	return -1,false
+}
+
+func (self *Sample) GetLabel()int {
 	return self.label
 }
 
@@ -57,7 +73,7 @@ type DataSet struct {
 	//max_number int //feature dimensions
 }
 
-func (d *DataSet) GetSamples() []*Sample {
+func (d *DataSet) GetSamples()[]*Sample {
 	return d.samples
 }
 
