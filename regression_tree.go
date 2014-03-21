@@ -309,7 +309,6 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 }
 
 func (self *RegressionTree) Predict(sample *Sample) float32 {
-	map_sample := sample.ToMapSample()
 	node := self.root
 	for {
 		if node.isleaf {
@@ -317,14 +316,14 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 		}
 		fid := node.feature_split.id
 		split_value := node.feature_split.value
-		if val, ok := map_sample.feature[fid]; !ok {
+		if index, ok := sample.FindFeature(fid); ok==false {
 			if node.child[UNKNOWN] != nil {
 				node = node.child[UNKNOWN]
 			} else {
 				return node.pred
 			}
 		} else {
-			if val < split_value {
+			if sample.feature[index].value < split_value {
 				node = node.child[LEFT]
 			} else {
 				node = node.child[RIGHT]
