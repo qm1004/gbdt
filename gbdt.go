@@ -64,6 +64,8 @@ func (self *GBDT) Train(d *DataSet) {
 
 	for i := 0; i < Conf.Tree_count; i++ {
 		fmt.Printf("iteration:%d ", i)
+		start := time.Now()
+
 		if Conf.Data_sampling_ratio < 1 {
 			random_shuffle(d.samples, len(d.samples))
 		}
@@ -84,7 +86,6 @@ func (self *GBDT) Train(d *DataSet) {
 			fmt.Println("rmse:", math.Sqrt(s/c))
 
 		}
-		start := time.Now()
 		self.trees[i].Fit(d, sample_number)
 		latency := time.Since(start)
 		fmt.Println("latency:", latency)
