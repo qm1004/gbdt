@@ -75,15 +75,20 @@ func (self *GBDT) Train(d *DataSet) {
 		}
 		if Conf.Debug {
 			//cal auc
-
+			auc := NewAuc()
+			for j := 0; j < len(d.samples); j++ {
+				p := LogitCtr(self.Predict(d.samples[j], i))
+				auc.Add(float64(p), d.samples[j].label)
+			}
+			fmt.Println("auc:", auc.CalculateAuc())
 			//cal loss
-			var s, c float64 = 0, 0
+			/*var s, c float64 = 0, 0
 			for j := 0; j < len(d.samples); j++ {
 				p := self.Predict(d.samples[j], i)
 				s += float64(Float32Square(float32(d.samples[j].label)-p) * d.samples[j].weight)
 				c += float64(d.samples[j].weight)
 			}
-			fmt.Println("rmse:", math.Sqrt(s/c))
+			fmt.Println("rmse:", math.Sqrt(s/c))*/
 
 		}
 		self.trees[i].Fit(d, sample_number)
@@ -137,4 +142,16 @@ func (self *GBDT) Load(s string) {
 		self.trees[i].Load(vs[i+2])
 	}
 
+}
+
+func (self *GBDT) GetFeatureWeight() PairList{
+	feature_weight := make(map[int]float32)
+	for i := 0; i < self.tree_count; i++ {
+		tree_feature_weight := self.trees[i].GetTreeFeatureWeight()
+		for key, val := range tree_feature_weight {
+			feature_weight[key] += val
+		}
+	}
+	feature_weight_list := SortMapByValue(feature_weight)
+	return feature_weight_list
 }

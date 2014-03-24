@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/davecheney/profile"
+	//"github.com/davecheney/profile"
 	"github.com/qm1004/gbdt"
 	"io/ioutil"
 	"log"
@@ -16,7 +16,7 @@ func init() {
 }
 
 func main() {
-	defer profile.Start(profile.CPUProfile).Stop() //monitor program performance
+	//defer profile.Start(profile.CPUProfile).Stop() //monitor program performance
 	if gbdt.Conf == nil {
 		fmt.Println("nil pointer")
 	} else {
@@ -25,7 +25,9 @@ func main() {
 	modelname := "./gbdt.model"
 	start := time.Now()
 	trainpath := "./train.data"
+	//trainpath:="/opt/tmp/gbdt/alltrain.data"
 	train_sample_number := 4584
+	//train_sample_number:=458334
 	dataset := &gbdt.DataSet{}
 	dataset.LoadDataFromFile(trainpath, train_sample_number)
 	g := gbdt.NewGBDT()
@@ -40,7 +42,9 @@ func main() {
 
 	start2 := time.Now()
 	testpath := "./test.data"
+	//testpath:="/opt/tmp/gbdt/alltest.data"
 	test_sample_number := 4584
+	//test_sample_number:=458334
 	testdataset := &gbdt.DataSet{}
 	testdataset.LoadDataFromFile(testpath, test_sample_number)
 
@@ -73,4 +77,8 @@ func main() {
 
 	latency = time.Since(start2)
 	fmt.Println("precision time:", latency)
+	feature_weight_list:=g.GetFeatureWeight()
+	for i := 0; i < len(feature_weight_list); i++ {
+		fmt.Println(feature_weight_list[i].Key,":",feature_weight_list[i].Value)
+	}
 }

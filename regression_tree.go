@@ -59,7 +59,6 @@ func NewRegressionTree() *RegressionTree {
 	}
 }
 
-
 func (self *RegressionTree) Fit(d *DataSet, l int) {
 	if l > len(d.samples) {
 		log.Fatal("data length out of index")
@@ -110,15 +109,15 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 		sample_map := sample.ToMapSample()
 		sample_map_list[i] = sample_map
 	}
-	predepth:=0
+	predepth := 0
 	for queue.Len() != 0 {
 		var wg sync.WaitGroup
 		predepth = queue.Front().Value.(*NodeSample).node.depth
-		for queue.Len() != 0{
+		for queue.Len() != 0 {
 			temp_ns := queue.Front()
 			temp := temp_ns.Value.(*NodeSample)
-			depth:=temp.node.depth
-			if predepth!=depth {
+			depth := temp.node.depth
+			if predepth != depth {
 				break
 			}
 			wg.Add(1)
@@ -494,4 +493,36 @@ func (self *RegressionTree) Load(s string) {
 		}
 	}
 	self.root = nodes[0]
+}
+
+func (self *RegressionTree) GetTreeFeatureWeight() map[int]float32 {
+	feature_weight := make(map[int]float32)
+	queue := list.New()
+	if self.root != nil {
+		queue.PushBack(self.root)
+	}
+	for e := queue.Front(); e != nil; e = e.Next() {
+		node := e.Value.(*Node)
+		if node.isleaf == false {
+			queue.PushBack(node.child[LEFT])
+			queue.PushBack(node.child[RIGHT])
+			var gain float32 = 0.0
+			if node.child[UNKNOWN] != nil {
+				queue.PushBack(node.child[UNKNOWN])
+				gain = node.variance - node.child[LEFT].variance - node.child[RIGHT].variance - node.child[UNKNOWN].variance
+			} else {
+				gain = node.variance - node.child[LEFT].variance - node.child[RIGHT].variance
+			}
+			if val, ok := feature_weight[node.feature_split.id]; ok {
+				if gain > val {
+					feature_weight[node.feature_split.id] = gain
+				}
+			} else {
+				feature_weight[node.feature_split.id] = gain
+			}
+		} else {
+			continue
+		}
+	}
+	return feature_weight
 }
