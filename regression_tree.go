@@ -119,17 +119,94 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 
 }
 
+/*func (self *RegressionTree) Fit(d *DataSet, l int) {
+	if l > len(d.samples) {
+		log.Fatal("data length out of index")
+	}
+
+	self.root = &Node{
+		child:        nil,
+		isleaf:       false,
+		pred:         0,
+		variance:     0,
+		sample_count: l,
+		depth:        0,
+	}
+
+	//feature sampling
+	featureid_list := make([]int, Conf.Number_of_feature)
+	sampled_feature := make(map[int]bool)
+	for i := 0; i < len(featureid_list); i++ {
+		featureid_list[i] = i
+		sampled_feature[i] = false
+	}
+	if Conf.Feature_sampling_ratio < 1 {
+		random_shuffle(featureid_list, len(featureid_list)) //sample features for fitting tree
+	}
+	k := int(Conf.Feature_sampling_ratio * float32(Conf.Number_of_feature))
+	for i := 0; i < k; i++ {
+		sampled_feature[featureid_list[i]] = true
+	}
+
+	ns := &NodeSample{}
+	ns.sample_sequence = make([]int, l)
+	for i, _ := range d.samples {
+		if i >= l {
+			break
+		}
+		ns.sample_sequence[i] = i
+	}
+	ns.node = self.root
+
+	queue := list.New()
+	queue.PushBack(ns)
+
+	sample_map_list := make([]*MapSample, l)
+	for i, sample := range d.samples {
+		if i >= l {
+			break
+		}
+		sample_map := sample.ToMapSample()
+		sample_map_list[i] = sample_map
+	}
+	predepth:=0
+	for queue.Len() != 0 {
+		var wg sync.WaitGroup
+		predepth = queue.Front().Value.(*NodeSample).node.depth
+		for queue.Len() != 0{
+			temp_ns := queue.Front()
+			temp := temp_ns.Value.(*NodeSample)
+			depth:=temp.node.depth
+			if predepth!=depth {
+				break
+			}
+			wg.Add(1)
+			go func(d []*MapSample, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
+				self.FitTree(d, node, sample_sequence, queue, sampled_feature)
+				wg.Done()
+			}(sample_map_list, temp.node, temp.sample_sequence, queue, sampled_feature)
+			queue.Remove(temp_ns)
+
+		}
+		wg.Wait()
+
+	}
+
+}*/
+
 func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
 
 	node.pred = NodePredictValue(d, sample_sequence)
 	node.variance = CalculateVariance(d, sample_sequence)
 	if node.depth >= self.max_depth || node.sample_count <= self.min_leaf_size || SameTarget(d, sample_sequence) {
 		node.isleaf = true
+		node.feature_split.id = -1
 		return
 	}
 
 	if self.FindSplitFeature(d, node, sample_sequence, sampled_feature) == false {
 		node.isleaf = true
+		node.feature_split.id = -1
 		return
 	}
 	child_sample_sequence := make([][]int, CHILDSIZE)
@@ -152,6 +229,7 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 
 	if len(child_sample_sequence[LEFT]) < self.min_leaf_size || len(child_sample_sequence[RIGHT]) < self.min_leaf_size {
 		node.isleaf = true
+		node.feature_split.id = -1
 		return
 	}
 	node.child[LEFT] = &Node{child: nil, isleaf: false, pred: 0, variance: 0, sample_count: len(child_sample_sequence[LEFT]), depth: node.depth + 1}
@@ -316,7 +394,7 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 		}
 		fid := node.feature_split.id
 		split_value := node.feature_split.value
-		if index, ok := sample.FindFeature(fid); ok==false {
+		if index, ok := sample.FindFeature(fid); ok == false {
 			if node.child[UNKNOWN] != nil {
 				node = node.child[UNKNOWN]
 			} else {
