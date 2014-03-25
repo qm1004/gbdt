@@ -1,9 +1,10 @@
 package gbdt
 
 import (
-	"sort"
 	"fmt"
+	"sort"
 )
+
 var _ = fmt.Println
 
 type Auc struct {
@@ -41,7 +42,7 @@ func (self *Auc) Add(score float64, label int) {
 	}
 }
 
-func (self *Auc) CalculateAuc() float64{
+func (self *Auc) CalculateAuc() float64 {
 	sort.Sort(sort.Float64Slice(self.positive_scores))
 	sort.Sort(sort.Float64Slice(self.negative_scores))
 	n0 := len(self.negative_scores)
@@ -50,7 +51,7 @@ func (self *Auc) CalculateAuc() float64{
 	var rankSum float64 = 1
 	i0 := 0
 	i1 := 0
-	for ;i0 < n0 && i1 < n1; {
+	for i0 < n0 && i1 < n1 {
 		v0 := self.negative_scores[i0]
 		v1 := self.positive_scores[i1]
 		if v0 < v1 {
@@ -63,12 +64,12 @@ func (self *Auc) CalculateAuc() float64{
 		} else {
 			var tieScore float64 = v0
 			k0 := 0
-			for ;i0 < n0 && self.negative_scores[i0] == tieScore; {
+			for i0 < n0 && self.negative_scores[i0] == tieScore {
 				k0++
 				i0++
 			}
 			k1 := 0
-			for ;i1 < n1 && self.positive_scores[i1] == tieScore; {
+			for i1 < n1 && self.positive_scores[i1] == tieScore {
 				k1++
 				i1++
 			}

@@ -140,18 +140,18 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 	node.variance = CalculateVariance(d, sample_sequence)
 	if node.depth >= self.max_depth || node.sample_count <= self.min_leaf_size || SameTarget(d, sample_sequence) {
 		node.isleaf = true
-		node.feature_split.id = -1
+		node.feature_split.Id = -1
 		return
 	}
 
 	if self.FindSplitFeature(d, node, sample_sequence, sampled_feature) == false {
 		node.isleaf = true
-		node.feature_split.id = -1
+		node.feature_split.Id = -1
 		return
 	}
 	child_sample_sequence := make([][]int, CHILDSIZE)
-	index := node.feature_split.id
-	split_value := node.feature_split.value
+	index := node.feature_split.Id
+	split_value := node.feature_split.Value
 	for _, k := range sample_sequence {
 		{
 			if val, ok := d[k].feature[index]; !ok {
@@ -169,7 +169,7 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 
 	if len(child_sample_sequence[LEFT]) < self.min_leaf_size || len(child_sample_sequence[RIGHT]) < self.min_leaf_size {
 		node.isleaf = true
-		node.feature_split.id = -1
+		node.feature_split.Id = -1
 		return
 	}
 	node.child[LEFT] = &Node{child: nil, isleaf: false, pred: 0, variance: 0, sample_count: len(child_sample_sequence[LEFT]), depth: node.depth + 1}
@@ -206,7 +206,7 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 			}
 		}
 	}
-	node.feature_split = Feature{id: -1, value: 0.0}
+	node.feature_split = Feature{Id: -1, Value: 0.0}
 	var min_variance float32 = math.MaxFloat32
 
 	var wg sync.WaitGroup
@@ -319,7 +319,7 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 
 	}
 	feature_split_info := &FeatureSplitInfo{
-		feature_split: Feature{id: fid, value: split_value},
+		feature_split: Feature{Id: fid, Value: split_value},
 		variance:      local_min_variance,
 	}
 
@@ -332,8 +332,8 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 		if node.isleaf {
 			return node.pred
 		}
-		fid := node.feature_split.id
-		split_value := node.feature_split.value
+		fid := node.feature_split.Id
+		split_value := node.feature_split.Value
 		if index, ok := sample.FindFeature(fid); ok == false {
 			if node.child[UNKNOWN] != nil {
 				node = node.child[UNKNOWN]
@@ -341,7 +341,7 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 				return node.pred
 			}
 		} else {
-			if sample.feature[index].value < split_value {
+			if sample.Features[index].Value < split_value {
 				node = node.child[LEFT]
 			} else {
 				node = node.child[RIGHT]
@@ -362,9 +362,9 @@ func (self *RegressionTree) Save() string {
 		node := e.Value.(*Node)
 		line := strconv.Itoa(position_map[node])
 		line += "\t"
-		line += strconv.Itoa(node.feature_split.id)
+		line += strconv.Itoa(node.feature_split.Id)
 		line += "\t"
-		line += strconv.FormatFloat(float64(node.feature_split.value), 'f', 4, 32)
+		line += strconv.FormatFloat(float64(node.feature_split.Value), 'f', 4, 32)
 		line += "\t"
 		line += strconv.FormatBool(node.isleaf)
 		line += "\t"
@@ -425,13 +425,13 @@ func (self *RegressionTree) Load(s string) {
 		if id, err := strconv.ParseInt(items[1], 10, 0); err != nil {
 			log.Fatal("feature_split.id", err)
 		} else {
-			node.feature_split.id = int(id)
+			node.feature_split.Id = int(id)
 		}
 
 		if value, err := strconv.ParseFloat(items[2], 32); err != nil {
 			log.Fatal("feature_split.value", err)
 		} else {
-			node.feature_split.value = float32(value)
+			node.feature_split.Value = float32(value)
 		}
 
 		if isleaf, err := strconv.ParseBool(items[3]); err != nil {
@@ -513,12 +513,12 @@ func (self *RegressionTree) GetTreeFeatureWeight() map[int]float32 {
 			} else {
 				gain = node.variance - node.child[LEFT].variance - node.child[RIGHT].variance
 			}
-			if val, ok := feature_weight[node.feature_split.id]; ok {
+			if val, ok := feature_weight[node.feature_split.Id]; ok {
 				if gain > val {
-					feature_weight[node.feature_split.id] = gain
+					feature_weight[node.feature_split.Id] = gain
 				}
 			} else {
-				feature_weight[node.feature_split.id] = gain
+				feature_weight[node.feature_split.Id] = gain
 			}
 		} else {
 			continue

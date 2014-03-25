@@ -23,7 +23,7 @@ func init() {
 	Conf = &Config{}
 	Conf.Number_of_feature = 17
 	Conf.Max_depth = 5
-	Conf.Tree_count = 10
+	Conf.Tree_count = 100
 	Conf.Shrinkage = 0.1
 	Conf.Feature_sampling_ratio = 1
 	Conf.Data_sampling_ratio = 0.7

@@ -70,7 +70,7 @@ func (self *GBDT) Train(d *DataSet) {
 			random_shuffle(d.samples, len(d.samples))
 		}
 		for j := 0; j < sample_number; j++ {
-			p := self.Predict(d.samples[j], i)
+			p := self.Predict(d.samples[j],i)
 			d.samples[j].target = FxGradient(d.samples[j].label, p)
 		}
 		if Conf.Debug {
@@ -98,15 +98,24 @@ func (self *GBDT) Train(d *DataSet) {
 
 }
 
-func (self *GBDT) Predict(sample *Sample, n int) float32 {
+func (self *GBDT) Predict(sample *Sample,n int) float32 {
 	if self.trees == nil {
 		return UNKNOWN_VALUE
 	}
-	r := self.bias
-	for i := 0; i < n; i++ {
-		r += self.shrinkage * self.trees[i].Predict(sample)
+	if n==0  {
+		sample.treenum++
+		sample.pred=self.bias
+		return sample.pred
 	}
-	return r
+	if sample.treenum==-1 {
+		sample.pred=self.bias
+		sample.treenum++
+	}
+	for i := sample.treenum; i < n; i++ {
+		sample.pred += self.shrinkage * self.trees[i].Predict(sample)
+	}
+	sample.treenum=n
+	return sample.pred
 }
 
 func (self *GBDT) Save() string {
@@ -144,7 +153,7 @@ func (self *GBDT) Load(s string) {
 
 }
 
-func (self *GBDT) GetFeatureWeight() PairList{
+func (self *GBDT) GetFeatureWeight() PairList {
 	feature_weight := make(map[int]float32)
 	for i := 0; i < self.tree_count; i++ {
 		tree_feature_weight := self.trees[i].GetTreeFeatureWeight()

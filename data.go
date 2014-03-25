@@ -16,35 +16,37 @@ const (
 )
 
 type Feature struct {
-	id    int
-	value float32
+	Id    int
+	Value float32
 	//is_continueous bool //1:CONTINUOUS_FEATURE,0:DISCRETE_FEATURE
 }
 
 type Sample struct {
-	feature []Feature
-	label   int
-	target  float32
-	weight  float32
+	Features []Feature
+	label    int
+	target   float32
+	weight   float32
+	treenum	 int
+	pred	 float32
 }
 
-func (self *Sample) FindFeature(id int) (int,bool){
-	l:=0
-	h:=len(self.feature)-1
-	for l<=h {
-		index:=(l+h)/2
-		if id==self.feature[index].id{
-			return index,true
-		}else if id>self.feature[index].id{
-			l=index+1
-		}else{
-			h=index-1
+func (self *Sample) FindFeature(id int) (int, bool) {
+	l := 0
+	h := len(self.Features) - 1
+	for l <= h {
+		index := (l + h) / 2
+		if id == self.Features[index].Id {
+			return index, true
+		} else if id > self.Features[index].Id {
+			l = index + 1
+		} else {
+			h = index - 1
 		}
 	}
-	return -1,false
+	return -1, false
 }
 
-func (self *Sample) GetLabel()int {
+func (self *Sample) GetLabel() int {
 	return self.label
 }
 
@@ -55,8 +57,8 @@ func (self *Sample) ToMapSample() *MapSample {
 		weight:  self.weight,
 		feature: make(map[int]float32),
 	}
-	for _, v := range self.feature {
-		m.feature[v.id] = v.value
+	for _, v := range self.Features {
+		m.feature[v.Id] = v.Value
 	}
 	return m
 }
@@ -73,7 +75,7 @@ type DataSet struct {
 	//max_number int //feature dimensions
 }
 
-func (d *DataSet) GetSamples()[]*Sample {
+func (d *DataSet) GetSamples() []*Sample {
 	return d.samples
 }
 
@@ -82,6 +84,7 @@ func (d *DataSet) FromString(line string, row int) {
 	items := strings.Split(line, ITEMSPLIT)
 	//fmt.Println("items:",items,items[0],items[1],len(items))
 	d.samples[row] = &Sample{}
+	d.samples[row].treenum = -1
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
 		fmt.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)
@@ -110,7 +113,7 @@ func (d *DataSet) FromString(line string, row int) {
 			fmt.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
-		d.samples[row].feature = append(d.samples[row].feature, Feature{id: fid, value: float32(val)})
+		d.samples[row].Features = append(d.samples[row].Features, Feature{Id: fid, Value: float32(val)})
 	}
 }
 
