@@ -70,7 +70,7 @@ func (self *GBDT) Train(d *DataSet) {
 			random_shuffle(d.samples, len(d.samples))
 		}
 		for j := 0; j < sample_number; j++ {
-			p := self.Predict(d.samples[j],i)
+			p := self.Predict(d.samples[j], i)
 			d.samples[j].target = FxGradient(d.samples[j].label, p)
 		}
 		if Conf.Debug {
@@ -78,7 +78,7 @@ func (self *GBDT) Train(d *DataSet) {
 			auc := NewAuc()
 			for j := 0; j < len(d.samples); j++ {
 				p := LogitCtr(self.Predict(d.samples[j], i))
-				auc.Add(float64(p), d.samples[j].label)
+				auc.Add(float64(p), float64(d.samples[j].weight), d.samples[j].label)
 			}
 			fmt.Println("auc:", auc.CalculateAuc())
 			//cal loss
@@ -98,23 +98,23 @@ func (self *GBDT) Train(d *DataSet) {
 
 }
 
-func (self *GBDT) Predict(sample *Sample,n int) float32 {
+func (self *GBDT) Predict(sample *Sample, n int) float32 {
 	if self.trees == nil {
 		return UNKNOWN_VALUE
 	}
-	if n==0  {
+	if n == 0 {
 		sample.treenum++
-		sample.pred=self.bias
+		sample.pred = self.bias
 		return sample.pred
 	}
-	if sample.treenum==-1 {
-		sample.pred=self.bias
+	if sample.treenum == -1 {
+		sample.pred = self.bias
 		sample.treenum++
 	}
 	for i := sample.treenum; i < n; i++ {
 		sample.pred += self.shrinkage * self.trees[i].Predict(sample)
 	}
-	sample.treenum=n
+	sample.treenum = n
 	return sample.pred
 }
 

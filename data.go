@@ -26,8 +26,8 @@ type Sample struct {
 	label    int
 	target   float32
 	weight   float32
-	treenum	 int
-	pred	 float32
+	treenum  int
+	pred     float32
 }
 
 func (self *Sample) FindFeature(id int) (int, bool) {
@@ -48,6 +48,9 @@ func (self *Sample) FindFeature(id int) (int, bool) {
 
 func (self *Sample) GetLabel() int {
 	return self.label
+}
+func (self *Sample) GetWeight() float32 {
+	return self.weight
 }
 
 func (self *Sample) ToMapSample() *MapSample {
@@ -139,6 +142,9 @@ func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignorew
 			d.samples[row].weight = 1
 		}
 		row++
+		if row%200000 == 1 {
+			fmt.Println("read ", row, " rows")
+		}
 	}
 	//fmt.Println("load data done!", len(d.samples), d.samples[0])
 

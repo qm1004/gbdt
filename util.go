@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"time"
+	"strings"
 )
 
 func random_shuffle(array interface{}, l int) bool {
@@ -40,17 +41,7 @@ func Float32Equal(a, b float32) bool {
 func Float32Square(a float32) float32 {
 	return a * a
 }
-func JoinString(vs []string, sep string) string {
-	if len(vs) == 0 {
-		return ""
-	}
-	res := vs[0]
-	for i := 1; i < len(vs); i++ {
-		res += sep
-		res += vs[i]
-	}
-	return res
-}
+
 
 // A data structure to hold a key/value pair.
 type Pair struct {
@@ -76,4 +67,13 @@ func SortMapByValue(m map[int]float32) PairList {
 	sort.Sort(p)
 	//fmt.Println("after:",p)
 	return p
+}
+
+func LoadFeatureMap(s string) map[int]string{
+	vs:=strings.Split(s,"\n")
+	feature_map:=make(map[int]string)	
+	for i,val := range vs{
+		feature_map[i]=val
+	}
+	return feature_map
 }

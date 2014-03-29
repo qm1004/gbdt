@@ -202,6 +202,9 @@ func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_
 		}
 		for fid, isknown := range known_valued_feature {
 			if sampled_feature[fid] == true && isknown == false {
+				if _, ok := feature_tuple_list[fid]; !ok {
+					feature_tuple_list[fid] = NewTupleList()
+				}
 				feature_tuple_list[fid].AddTuple(UNKNOWN_VALUE, d[index].target, d[index].weight)
 			}
 		}
