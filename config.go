@@ -21,6 +21,19 @@ var Conf *Config
 
 func init() {
 	Conf = &Config{}
+	Conf.Number_of_feature = 17
+	Conf.Max_depth = 5
+	Conf.Tree_count = 10
+	Conf.Shrinkage = 0.1
+	Conf.Feature_sampling_ratio = 1
+	Conf.Data_sampling_ratio = 0.7
+	Conf.Min_leaf_size = 100
+	Conf.Losstype = LOG_LIKEHOOD
+	Conf.Debug = true
+}
+
+/*func init() {
+	Conf = &Config{}
 	Conf.Number_of_feature = 38
 	Conf.Max_depth = 5
 	Conf.Tree_count = 50
@@ -30,7 +43,7 @@ func init() {
 	Conf.Min_leaf_size = 20000
 	Conf.Losstype = LOG_LIKEHOOD
 	Conf.Debug = true
-}
+}*/
 
 func (Conf *Config) GetTreecount() int {
 	return Conf.Tree_count

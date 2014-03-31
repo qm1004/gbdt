@@ -154,7 +154,7 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 	split_value := node.feature_split.Value
 	for _, k := range sample_sequence {
 		{
-			if val, ok := d[k].feature[index]; !ok {
+			if val, ok := d[k].feature[index]; !ok { //fix me!
 				child_sample_sequence[UNKNOWN] = append(child_sample_sequence[UNKNOWN], k)
 			} else if ok {
 				if val < split_value {
