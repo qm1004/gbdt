@@ -22,7 +22,7 @@ type Feature struct {
 }
 
 type Sample struct {
-	Features []Feature
+	Features []float32
 	label    int
 	target   float32
 	weight   float32
@@ -30,7 +30,7 @@ type Sample struct {
 	pred     float32
 }
 
-func (self *Sample) FindFeature(id int) (int, bool) {
+/*func (self *Sample) FindFeature(id int) (int, bool) {
 	l := 0
 	h := len(self.Features) - 1
 	for l <= h {
@@ -44,7 +44,7 @@ func (self *Sample) FindFeature(id int) (int, bool) {
 		}
 	}
 	return -1, false
-}
+}*/
 
 func (self *Sample) GetLabel() int {
 	return self.label
@@ -53,18 +53,6 @@ func (self *Sample) GetWeight() float32 {
 	return self.weight
 }
 
-func (self *Sample) ToMapSample() *MapSample {
-	m := &MapSample{
-		label:   self.label,
-		target:  self.target,
-		weight:  self.weight,
-		feature: make(map[int]float32),
-	}
-	for _, v := range self.Features {
-		m.feature[v.Id] = v.Value
-	}
-	return m
-}
 
 type MapSample struct {
 	label   int
@@ -101,7 +89,10 @@ func (d *DataSet) FromString(line string, row int) {
 	} else {
 		d.samples[row].label = label
 	}
-
+	d.samples[row].Features=make([]float32,Conf.Number_of_feature)
+	for i := 0; i < Conf.Number_of_feature; i++ {
+		d.samples[row].Features[i]=UNKNOWN_VALUE
+	}
 	for i := 2; i < len(items); i++ {
 		kv := strings.Split(items[i], FEATURESCORESPLIT)
 		fid, err := strconv.Atoi(kv[0])
@@ -116,7 +107,9 @@ func (d *DataSet) FromString(line string, row int) {
 			fmt.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
-		d.samples[row].Features = append(d.samples[row].Features, Feature{Id: fid, Value: float32(val)})
+		if fid < Conf.Number_of_feature{
+			d.samples[row].Features[fid] = float32(val) 
+		}
 	}
 }
 

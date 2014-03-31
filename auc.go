@@ -66,6 +66,8 @@ func (self *Auc) PrintConfusionTable() {
 func (self *Auc) CalculateAuc() float64 {
 	sort.Sort(sort.Reverse(self.positive_scores))
 	sort.Sort(sort.Reverse(self.negative_scores))
+	fmt.Println("score:",self.positive_scores[0].score,self.positive_scores[1].score,self.positive_scores[20].score)
+	fmt.Println("neg score:",self.negative_scores[0].score,self.negative_scores[1].score,self.negative_scores[20].score)
 	i0 := 0
 	i1 := 0
 	n0 := len(self.negative_scores)

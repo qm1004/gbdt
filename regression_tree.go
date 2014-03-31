@@ -101,14 +101,6 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 	queue := list.New()
 	queue.PushBack(ns)
 
-	sample_map_list := make([]*MapSample, l)
-	for i, sample := range d.samples {
-		if i >= l {
-			break
-		}
-		sample_map := sample.ToMapSample()
-		sample_map_list[i] = sample_map
-	}
 	predepth := 0
 	for queue.Len() != 0 {
 		var wg sync.WaitGroup
@@ -121,10 +113,10 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 				break
 			}
 			wg.Add(1)
-			go func(d []*MapSample, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
+			go func(d *DataSet, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
 				self.FitTree(d, node, sample_sequence, queue, sampled_feature)
 				wg.Done()
-			}(sample_map_list, temp.node, temp.sample_sequence, queue, sampled_feature)
+			}(d, temp.node, temp.sample_sequence, queue, sampled_feature)
 			queue.Remove(temp_ns)
 
 		}
@@ -134,7 +126,7 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 
 }
 
-func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
+func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []int, queue *list.List, sampled_feature map[int]bool) {
 
 	node.pred = NodePredictValue(d, sample_sequence)
 	node.variance = CalculateVariance(d, sample_sequence)
@@ -154,9 +146,9 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 	split_value := node.feature_split.Value
 	for _, k := range sample_sequence {
 		{
-			if val, ok := d[k].feature[index]; !ok { //fix me!
+			if val := d.samples[k].Features[index]; val==UNKNOWN_VALUE { //fix me!
 				child_sample_sequence[UNKNOWN] = append(child_sample_sequence[UNKNOWN], k)
-			} else if ok {
+			} else {
 				if val < split_value {
 					child_sample_sequence[LEFT] = append(child_sample_sequence[LEFT], k)
 				} else {
@@ -185,27 +177,17 @@ func (self *RegressionTree) FitTree(d []*MapSample, node *Node, sample_sequence 
 
 }
 
-func (self *RegressionTree) FindSplitFeature(d []*MapSample, node *Node, sample_sequence []int, sampled_feature map[int]bool) bool {
+func (self *RegressionTree) FindSplitFeature(d *DataSet, node *Node, sample_sequence []int, sampled_feature map[int]bool) bool {
 	feature_tuple_list := make(map[int]*TupleList)
 
 	for _, index := range sample_sequence { //build index for feature to samples
-		known_valued_feature := make([]bool, Conf.Number_of_feature) //this sample has specific feature
-		for fid, fvalue := range d[index].feature {
+		for fid, fvalue := range d.samples[index].Features {
 			if val, ok := sampled_feature[fid]; ok && val == true {
 
 				if _, ok2 := feature_tuple_list[fid]; !ok2 {
 					feature_tuple_list[fid] = NewTupleList()
 				}
-				feature_tuple_list[fid].AddTuple(fvalue, d[index].target, d[index].weight)
-				known_valued_feature[fid] = true
-			}
-		}
-		for fid, isknown := range known_valued_feature {
-			if sampled_feature[fid] == true && isknown == false {
-				if _, ok := feature_tuple_list[fid]; !ok {
-					feature_tuple_list[fid] = NewTupleList()
-				}
-				feature_tuple_list[fid].AddTuple(UNKNOWN_VALUE, d[index].target, d[index].weight)
+				feature_tuple_list[fid].AddTuple(fvalue, d.samples[index].target, d.samples[index].weight)
 			}
 		}
 	}
@@ -337,14 +319,14 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 		}
 		fid := node.feature_split.Id
 		split_value := node.feature_split.Value
-		if index, ok := sample.FindFeature(fid); ok == false {
+		if sample.Features[fid]==UNKNOWN_VALUE{
 			if node.child[UNKNOWN] != nil {
 				node = node.child[UNKNOWN]
 			} else {
 				return node.pred
 			}
 		} else {
-			if sample.Features[index].Value < split_value {
+			if sample.Features[fid] < split_value {
 				node = node.child[LEFT]
 			} else {
 				node = node.child[RIGHT]
