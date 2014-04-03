@@ -14,9 +14,10 @@ func random_shuffle(array interface{}, l int) bool {
 		if slice.Len() < l {
 			return false
 		}
+		length:=slice.Len()
 		rand.Seed(time.Now().UTC().UnixNano())
 		for i := 0; i < l; i++ {
-			j := RandInt(i, l)
+			j := RandInt(i, length)
 			tmp := slice.Index(i).Interface()
 			slice.Index(i).Set(slice.Index(j))
 			slice.Index(j).Set(reflect.ValueOf(tmp))
