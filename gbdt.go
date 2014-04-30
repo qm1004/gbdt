@@ -40,7 +40,7 @@ func (self *GBDT) Init(d *DataSet) {
 	var c float32 = 0
 
 	i := 0
-	for _, sample := range d.samples {
+	for _, sample := range d.Samples {
 		s += float32(sample.label) * (sample.weight)
 		c += sample.weight
 		i++
@@ -56,9 +56,9 @@ func (self *GBDT) Init(d *DataSet) {
 
 func (self *GBDT) Train(d *DataSet) {
 
-	var sample_number int = len(d.samples)
+	var sample_number int = len(d.Samples)
 	if Conf.Data_sampling_ratio < 1 {
-		sample_number = int(Conf.Data_sampling_ratio * float32(len(d.samples)))
+		sample_number = int(Conf.Data_sampling_ratio * float32(len(d.Samples)))
 	}
 	self.Init(d)
 
@@ -67,21 +67,21 @@ func (self *GBDT) Train(d *DataSet) {
 		start := time.Now()
 
 		if Conf.Data_sampling_ratio < 1 {
-			if !random_shuffle(d.samples, len(d.samples)) {
+			if !random_shuffle(d.Samples, len(d.Samples)) {
 				fmt.Println("not random_shuffle!")
 				os.Exit(1)
 			}
 		}
 		for j := 0; j < sample_number; j++ {
-			p := self.Predict(d.samples[j], i)
-			d.samples[j].target = FxGradient(d.samples[j].label, p)
+			p := self.Predict(d.Samples[j], i)
+			d.Samples[j].target = FxGradient(d.Samples[j].label, p)
 		}
 		if Conf.Debug {
 			//cal auc
 			auc := NewAuc()
-			for j := 0; j < len(d.samples); j++ {
-				p := LogitCtr(self.Predict(d.samples[j], i))
-				auc.Add(float64(p), float64(d.samples[j].weight), d.samples[j].label)
+			for j := 0; j < len(d.Samples); j++ {
+				p := LogitCtr(self.Predict(d.Samples[j], i))
+				auc.Add(float64(p), float64(d.Samples[j].weight), d.Samples[j].label)
 			}
 			fmt.Println("auc:", auc.CalculateAuc())
 			//cal loss

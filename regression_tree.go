@@ -60,7 +60,7 @@ func NewRegressionTree() *RegressionTree {
 }
 
 func (self *RegressionTree) Fit(d *DataSet, l int) {
-	if l > len(d.samples) {
+	if l > len(d.Samples) {
 		log.Fatal("data length out of index")
 	}
 
@@ -90,7 +90,7 @@ func (self *RegressionTree) Fit(d *DataSet, l int) {
 
 	ns := &NodeSample{}
 	ns.sample_sequence = make([]int, l)
-	for i, _ := range d.samples {
+	for i, _ := range d.Samples {
 		if i >= l {
 			break
 		}
@@ -153,7 +153,7 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 	split_value := node.feature_split.Value
 	for _, k := range sample_sequence {
 		{
-			if val := d.samples[k].Features[index]; val == UNKNOWN_VALUE { //fix me!
+			if val := d.Samples[k].Features[index]; val == UNKNOWN_VALUE { //fix me!
 				child_sample_sequence[UNKNOWN] = append(child_sample_sequence[UNKNOWN], k)
 			} else {
 				if val < split_value {
@@ -197,13 +197,13 @@ func (self *RegressionTree) FindSplitFeature(d *DataSet, node *Node, sample_sequ
 	feature_tuple_list := make(map[int]*TupleList)
 
 	for _, index := range sample_sequence { //build index for feature to samples
-		for fid, fvalue := range d.samples[index].Features {
+		for fid, fvalue := range d.Samples[index].Features {
 			if val, ok := sampled_feature[fid]; ok && val == true {
 
 				if _, ok2 := feature_tuple_list[fid]; !ok2 {
 					feature_tuple_list[fid] = NewTupleList()
 				}
-				feature_tuple_list[fid].AddTuple(fvalue, d.samples[index].target, d.samples[index].weight)
+				feature_tuple_list[fid].AddTuple(fvalue, d.Samples[index].target, d.Samples[index].weight)
 			}
 		}
 	}

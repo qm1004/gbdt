@@ -38,12 +38,12 @@ func NodePredictValue(d *DataSet, sample_sequence []int) float32 {
 func LogitOptimalValue(d *DataSet, sample_sequence []int) float32 {
 	var val1 float32 = 0
 	var val2 float32 = 0
-	if len(sample_sequence) > len(d.samples) || len(sample_sequence) == 0 {
+	if len(sample_sequence) > len(d.Samples) || len(sample_sequence) == 0 {
 		return 0.0
 	}
 	for _, index := range sample_sequence {
-		val1 += d.samples[index].target
-		absy := float32(math.Abs(float64(d.samples[index].target)))
+		val1 += d.Samples[index].target
+		absy := float32(math.Abs(float64(d.Samples[index].target)))
 		val2 += absy / (2 - absy)
 	}
 	return val1 / val2
@@ -52,12 +52,12 @@ func LogitOptimalValue(d *DataSet, sample_sequence []int) float32 {
 func LsOptimalValue(d *DataSet, sample_sequence []int) float32 {
 	var val1 float32 = 0
 	var val2 float32 = 0
-	if len(sample_sequence) > len(d.samples) || len(sample_sequence) == 0 {
+	if len(sample_sequence) > len(d.Samples) || len(sample_sequence) == 0 {
 		return 0.0
 	}
 	for _, index := range sample_sequence {
-		val1 += d.samples[index].target * d.samples[index].weight
-		val2 += d.samples[index].weight
+		val1 += d.Samples[index].target * d.Samples[index].weight
+		val2 += d.Samples[index].weight
 	}
 	return val1 / val2
 }
@@ -67,13 +67,13 @@ func LogitCtr(f float32) float32 {
 }
 
 func SameTarget(d *DataSet, sample_sequence []int) bool {
-	if len(sample_sequence) == 0 || len(sample_sequence) > len(d.samples) {
+	if len(sample_sequence) == 0 || len(sample_sequence) > len(d.Samples) {
 		fmt.Println(len(sample_sequence))
 		log.Fatal("out of index sample_sequence")
 	}
-	var val float32 = d.samples[sample_sequence[0]].target
+	var val float32 = d.Samples[sample_sequence[0]].target
 	for i := 1; i < len(sample_sequence); i++ {
-		if !Float32Equal(val, d.samples[sample_sequence[i]].target) {
+		if !Float32Equal(val, d.Samples[sample_sequence[i]].target) {
 			return false
 		}
 	}
@@ -83,9 +83,9 @@ func SameTarget(d *DataSet, sample_sequence []int) bool {
 func CalculateVariance(d *DataSet, sample_sequence []int) (variance float32) {
 	var s, ss, total_weight float64 = 0.0, 0.0, 0.0
 	for _, k := range sample_sequence {
-		s += float64(d.samples[k].target * d.samples[k].weight)
-		ss += float64(d.samples[k].target * d.samples[k].target * d.samples[k].weight)
-		total_weight += float64(d.samples[k].weight)
+		s += float64(d.Samples[k].target * d.Samples[k].weight)
+		ss += float64(d.Samples[k].target * d.Samples[k].target * d.Samples[k].weight)
+		total_weight += float64(d.Samples[k].weight)
 	}
 	if total_weight > 1 {
 		//variance = float32(ss/total_weight - s*s/total_weight/total_weight)
