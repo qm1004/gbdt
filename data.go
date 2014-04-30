@@ -61,36 +61,36 @@ type MapSample struct {
 }
 
 type DataSet struct {
-	samples []*Sample
+	Samples []*Sample
 	//max_number int //feature dimensions
 }
 
 func (d *DataSet) GetSamples() []*Sample {
-	return d.samples
+	return d.Samples
 }
 
 func (d *DataSet) FromString(line string, row int) {
 	//fmt.Println("line:",line)
 	items := strings.Split(line, ITEMSPLIT)
 	//fmt.Println("items:",items,items[0],items[1],len(items))
-	d.samples[row] = &Sample{}
-	d.samples[row].treenum = -1
+	d.Samples[row] = &Sample{}
+	d.Samples[row].treenum = -1
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
 		log.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)
 	} else {
-		//fmt.Println("samples:",len(d.samples))
-		d.samples[row].weight = float32(weight)
+		//fmt.Println("Samples:",len(d.Samples))
+		d.Samples[row].weight = float32(weight)
 	}
 	if label, err := strconv.Atoi(items[1]); err != nil {
 		log.Println("label paser err:", items[1], err, row)
 		os.Exit(1)
 	} else {
-		d.samples[row].label = label
+		d.Samples[row].label = label
 	}
-	d.samples[row].Features = make([]float32, Conf.Number_of_feature)
+	d.Samples[row].Features = make([]float32, Conf.Number_of_feature)
 	for i := 0; i < Conf.Number_of_feature; i++ {
-		d.samples[row].Features[i] = UNKNOWN_VALUE
+		d.Samples[row].Features[i] = UNKNOWN_VALUE
 	}
 	for i := 2; i < len(items); i++ {
 		kv := strings.Split(items[i], FEATURESCORESPLIT)
@@ -107,7 +107,7 @@ func (d *DataSet) FromString(line string, row int) {
 			os.Exit(2)
 		}
 		if fid < Conf.Number_of_feature {
-			d.samples[row].Features[fid] = float32(val)
+			d.Samples[row].Features[fid] = float32(val)
 		}
 	}
 }
@@ -118,7 +118,7 @@ func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignorew
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	d.samples = make([]*Sample, sample_number)
+	d.Samples = make([]*Sample, sample_number)
 	defer f.Close()
 	br := bufio.NewReader(f)
 	row := 0
@@ -131,14 +131,14 @@ func (d *DataSet) LoadDataFromFileWeight(path string, sample_number int, ignorew
 		line = strings.TrimSpace(line)
 		d.FromString(line, row)
 		if ignoreweight {
-			d.samples[row].weight = 1
+			d.Samples[row].weight = 1
 		}
 		row++
 		if row%200000 == 1 {
 			fmt.Println("read ", row, " rows")
 		}
 	}
-	//fmt.Println("load data done!", len(d.samples), d.samples[0])
+	//fmt.Println("load data done!", len(d.Samples), d.Samples[0])
 
 }
 
