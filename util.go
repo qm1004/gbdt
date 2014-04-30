@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"reflect"
 	"sort"
-	"time"
 	"strings"
+	"time"
 )
 
 func random_shuffle(array interface{}, l int) bool {
@@ -14,7 +14,7 @@ func random_shuffle(array interface{}, l int) bool {
 		if slice.Len() < l {
 			return false
 		}
-		length:=slice.Len()
+		length := slice.Len()
 		rand.Seed(time.Now().UTC().UnixNano())
 		for i := 0; i < l; i++ {
 			j := RandInt(i, length)
@@ -43,7 +43,6 @@ func Float32Square(a float32) float32 {
 	return a * a
 }
 
-
 // A data structure to hold a key/value pair.
 type Pair struct {
 	Key   int
@@ -70,11 +69,11 @@ func SortMapByValue(m map[int]float32) PairList {
 	return p
 }
 
-func LoadFeatureMap(s string) map[int]string{
-	vs:=strings.Split(s,"\n")
-	feature_map:=make(map[int]string)	
-	for i,val := range vs{
-		feature_map[i]=val
+func LoadFeatureMap(s string) map[int]string {
+	vs := strings.Split(s, "\n")
+	feature_map := make(map[int]string)
+	for i, val := range vs {
+		feature_map[i] = val
 	}
 	return feature_map
 }

@@ -132,21 +132,28 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 	node.variance = CalculateVariance(d, sample_sequence)
 	if node.depth >= self.max_depth || node.sample_count <= self.min_leaf_size || SameTarget(d, sample_sequence) {
 		node.isleaf = true
-		node.feature_split.Id = -1
+		//node.feature_split.Id = -1
+		if node.depth==0 {
+			log.Println("same target!")
+		}
 		return
 	}
 
 	if self.FindSplitFeature(d, node, sample_sequence, sampled_feature) == false {
 		node.isleaf = true
-		node.feature_split.Id = -1
+		if node.depth==0 {
+			log.Println("can't find split feature!")
+		}
+		//node.feature_split.Id = -1
 		return
 	}
+	
 	child_sample_sequence := make([][]int, CHILDSIZE)
 	index := node.feature_split.Id
 	split_value := node.feature_split.Value
 	for _, k := range sample_sequence {
 		{
-			if val := d.samples[k].Features[index]; val==UNKNOWN_VALUE { //fix me!
+			if val := d.samples[k].Features[index]; val == UNKNOWN_VALUE { //fix me!
 				child_sample_sequence[UNKNOWN] = append(child_sample_sequence[UNKNOWN], k)
 			} else {
 				if val < split_value {
@@ -160,9 +167,18 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 	node.child = make([]*Node, CHILDSIZE)
 
 	if len(child_sample_sequence[LEFT]) < self.min_leaf_size || len(child_sample_sequence[RIGHT]) < self.min_leaf_size {
+		if Conf.Enable_feature_tunning && len(Conf.Feature_costs) == Conf.Number_of_feature && node.depth==0 {
+			Conf.Feature_costs[node.feature_split.Id] += 1e-4
+		}
+		if node.depth==0 {
+			log.Println("child number too small!")
+		}
 		node.isleaf = true
-		node.feature_split.Id = -1
+		//node.feature_split.Id = -1
 		return
+	}
+	if Conf.Enable_feature_tunning && len(Conf.Feature_costs) == Conf.Number_of_feature {
+		Conf.Feature_costs[node.feature_split.Id] += 1e-4
 	}
 	node.child[LEFT] = &Node{child: nil, isleaf: false, pred: 0, variance: 0, sample_count: len(child_sample_sequence[LEFT]), depth: node.depth + 1}
 	queue.PushBack(&NodeSample{node: node.child[LEFT], sample_sequence: child_sample_sequence[LEFT]})
@@ -296,7 +312,9 @@ func (self *RegressionTree) GetFeatureSplitValue(fid int, t *TupleList) (*Featur
 		}
 
 		variance := variance1 + variance2 + variance3
-
+		if Conf.Enable_feature_tunning && len(Conf.Feature_costs) == Conf.Number_of_feature {
+			variance *= Conf.Feature_costs[fid]
+		}
 		if local_min_variance > variance {
 			local_min_variance = variance
 			split_value = (val1 + val2) / 2.0
@@ -319,7 +337,7 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 		}
 		fid := node.feature_split.Id
 		split_value := node.feature_split.Value
-		if sample.Features[fid]==UNKNOWN_VALUE{
+		if sample.Features[fid] == UNKNOWN_VALUE {
 			if node.child[UNKNOWN] != nil {
 				node = node.child[UNKNOWN]
 			} else {

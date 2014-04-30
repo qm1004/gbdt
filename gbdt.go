@@ -67,7 +67,10 @@ func (self *GBDT) Train(d *DataSet) {
 		start := time.Now()
 
 		if Conf.Data_sampling_ratio < 1 {
-			random_shuffle(d.samples, len(d.samples))
+			if !random_shuffle(d.samples, len(d.samples)) {
+				fmt.Println("not random_shuffle!")
+				os.Exit(1)
+			}
 		}
 		for j := 0; j < sample_number; j++ {
 			p := self.Predict(d.samples[j], i)

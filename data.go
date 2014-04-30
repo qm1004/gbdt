@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
-	//"log"
 )
 
 const (
@@ -53,7 +53,6 @@ func (self *Sample) GetWeight() float32 {
 	return self.weight
 }
 
-
 type MapSample struct {
 	label   int
 	target  float32
@@ -77,38 +76,38 @@ func (d *DataSet) FromString(line string, row int) {
 	d.samples[row] = &Sample{}
 	d.samples[row].treenum = -1
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
-		fmt.Println("weight paser err:", items[0], err, row)
+		log.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)
 	} else {
 		//fmt.Println("samples:",len(d.samples))
 		d.samples[row].weight = float32(weight)
 	}
 	if label, err := strconv.Atoi(items[1]); err != nil {
-		fmt.Println("label paser err:", items[1], err, row)
+		log.Println("label paser err:", items[1], err, row)
 		os.Exit(1)
 	} else {
 		d.samples[row].label = label
 	}
-	d.samples[row].Features=make([]float32,Conf.Number_of_feature)
+	d.samples[row].Features = make([]float32, Conf.Number_of_feature)
 	for i := 0; i < Conf.Number_of_feature; i++ {
-		d.samples[row].Features[i]=UNKNOWN_VALUE
+		d.samples[row].Features[i] = UNKNOWN_VALUE
 	}
 	for i := 2; i < len(items); i++ {
 		kv := strings.Split(items[i], FEATURESCORESPLIT)
 		fid, err := strconv.Atoi(kv[0])
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err", items[i], err, row, kv)
+			log.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
 		val, err := strconv.ParseFloat(kv[1], 32)
 		if err != nil {
 			// handle error
-			fmt.Println("feature paser err", items[i], err, row, kv)
+			log.Println("feature paser err", items[i], err, row, kv)
 			os.Exit(2)
 		}
-		if fid < Conf.Number_of_feature{
-			d.samples[row].Features[fid] = float32(val) 
+		if fid < Conf.Number_of_feature {
+			d.samples[row].Features[fid] = float32(val)
 		}
 	}
 }

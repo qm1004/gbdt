@@ -7,8 +7,6 @@ import (
 
 var _ = fmt.Println
 
-
-
 type weight_score struct {
 	score  float64
 	weight float64
@@ -83,7 +81,7 @@ func (self *Auc) CalculateAuc() float64 {
 		w0 := self.negative_scores[i0].weight
 		v1 := self.positive_scores[i1].score
 		w1 := self.positive_scores[i1].weight
-		var label int=0
+		var label int = 0
 		var v float64
 		if v1 > v0 {
 			i1++
@@ -98,11 +96,11 @@ func (self *Auc) CalculateAuc() float64 {
 			i0++
 			for i0 < n0 && self.negative_scores[i0].score == v {
 				w0 += self.negative_scores[i0].weight
-				i0++	
+				i0++
 			}
 			i1++
 			for i1 < n1 && self.positive_scores[i1].score == v {
-				w1+= self.positive_scores[i1].weight
+				w1 += self.positive_scores[i1].weight
 				i1++
 			}
 		}
@@ -112,33 +110,33 @@ func (self *Auc) CalculateAuc() float64 {
 			no_click = 0.0
 			lastscore = v
 		}
-		if label==1 {
+		if label == 1 {
 			click_sum += w1
-		}else if label==-1 {
+		} else if label == -1 {
 			no_click += w0
 			no_click_sum += w0
-		}else{
+		} else {
 			no_click += w0
 			no_click_sum += w0
 			click_sum += w1
 		}
 	}
-	for i1<n1 {
+	for i1 < n1 {
 		v1 := self.positive_scores[i1].score
 		w1 := self.positive_scores[i1].weight
-		if lastscore != v1{
+		if lastscore != v1 {
 			auc_temp += (click_sum + old_click_sum) * no_click / 2.0
 			old_click_sum = click_sum
 			no_click = 0.0
 			lastscore = v1
 		}
-		click_sum+=w1
+		click_sum += w1
 		i1++
 	}
-	for i0<n0 {
+	for i0 < n0 {
 		v0 := self.negative_scores[i0].score
 		w0 := self.negative_scores[i0].weight
-		if lastscore != v0{
+		if lastscore != v0 {
 			auc_temp += (click_sum + old_click_sum) * no_click / 2.0
 			old_click_sum = click_sum
 			no_click = 0.0
