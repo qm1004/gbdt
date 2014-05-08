@@ -35,6 +35,10 @@ func NewGBDT() (gbdt *GBDT) {
 	return
 }
 
+func (self *GBDT) GetTreeCount() int {
+	return self.tree_count
+}
+
 func (self *GBDT) Init(d *DataSet) {
 	var s float32 = 0
 	var c float32 = 0
