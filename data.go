@@ -26,7 +26,7 @@ type Sample struct {
 	label    int
 	target   float32
 	weight   float32
-	treenum  int
+	Treenum  int
 	pred     float32
 }
 
@@ -74,7 +74,7 @@ func (d *DataSet) FromString(line string, row int) {
 	items := strings.Split(line, ITEMSPLIT)
 	//fmt.Println("items:",items,items[0],items[1],len(items))
 	d.Samples[row] = &Sample{}
-	d.Samples[row].treenum = -1
+	d.Samples[row].Treenum = -1
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
 		log.Println("weight paser err:", items[0], err, row)
 		os.Exit(1)

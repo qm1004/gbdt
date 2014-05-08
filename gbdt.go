@@ -110,18 +110,18 @@ func (self *GBDT) Predict(sample *Sample, n int) float32 {
 		return UNKNOWN_VALUE
 	}
 	if n == 0 {
-		sample.treenum++
+		sample.Treenum++
 		sample.pred = self.bias
 		return sample.pred
 	}
-	if sample.treenum == -1 {
+	if sample.Treenum == -1 {
 		sample.pred = self.bias
-		sample.treenum++
+		sample.Treenum++
 	}
-	for i := sample.treenum; i < n; i++ {
+	for i := sample.Treenum; i < n; i++ {
 		sample.pred += self.shrinkage * self.trees[i].Predict(sample)
 	}
-	sample.treenum = n
+	sample.Treenum = n
 	return sample.pred
 }
 
