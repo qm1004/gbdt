@@ -44,7 +44,7 @@ func LogitOptimalValue(d *DataSet, sample_sequence []int) float32 {
 	for _, index := range sample_sequence {
 		val1 += d.Samples[index].target
 		absy := float32(math.Abs(float64(d.Samples[index].target)))
-		val2 += absy / (2 - absy)
+		val2 += absy * (2 - absy)
 	}
 	return val1 / val2
 }
