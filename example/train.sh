@@ -1,0 +1,1 @@
+./train -treecount=10 -trainrows=4584  -debug=true -trainpath="train.data" -modelname="gbdt.model" -feature_map_file="feature.map" -feature_num=17 -depth=4 -min_leaf_size=30 -feature_sampling_ratio=0.7 -data_sampling_ratio=0.8 -shrinkage=0.1 -aucfile="train.auc" -testrows=4584 -testpath="test.data" -istestset=true -switch_feature_tune=true
