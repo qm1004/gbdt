@@ -13,6 +13,10 @@ import (
 var _ = time.Now
 var _ = os.Exit
 
+const (
+	FEATURESPLIT = "\004"
+)
+
 type GBDT struct {
 	trees      []*RegressionTree
 	tree_count int
@@ -67,7 +71,7 @@ func (self *GBDT) Train(d *DataSet) {
 	self.Init(d)
 
 	for i := 0; i < Conf.Tree_count; i++ {
-		fmt.Printf("iteration:%d ", i)
+		log.Println("iteration: ", i)
 		start := time.Now()
 
 		if Conf.Data_sampling_ratio < 1 {
@@ -80,27 +84,44 @@ func (self *GBDT) Train(d *DataSet) {
 			p := self.Predict(d.Samples[j], i)
 			d.Samples[j].target = FxGradient(d.Samples[j].label, p)
 		}
+		//cal loss
+		/*var s, c float64 = 0, 0
+		for j := 0; j < len(d.samples); j++ {
+			p := self.Predict(d.samples[j], i)
+			s += float64(Float32Square(float32(d.samples[j].label)-p) * d.samples[j].weight)
+			c += float64(d.samples[j].weight)
+		}
+		fmt.Println("rmse:", math.Sqrt(s/c))*/
+
+		self.trees[i].Fit(d, sample_number)
+		latency := time.Since(start)
+		log.Println("latency:", latency)
 		if Conf.Debug {
 			//cal auc
 			auc := NewAuc()
+			var logloss, totalweight float32 = 0.0, 0.0
 			for j := 0; j < len(d.Samples); j++ {
-				p := LogitCtr(self.Predict(d.Samples[j], i))
+				totalweight += d.Samples[j].weight
+				score := self.Predict(d.Samples[j], i)
+				p := LogitCtr(score)
 				auc.Add(float64(p), float64(d.Samples[j].weight), d.Samples[j].label)
-			}
-			fmt.Println("auc:", auc.CalculateAuc())
-			//cal loss
-			/*var s, c float64 = 0, 0
-			for j := 0; j < len(d.samples); j++ {
-				p := self.Predict(d.samples[j], i)
-				s += float64(Float32Square(float32(d.samples[j].label)-p) * d.samples[j].weight)
-				c += float64(d.samples[j].weight)
-			}
-			fmt.Println("rmse:", math.Sqrt(s/c))*/
+				if d.Samples[j].label == 1 {
+					if score < -15 {
+						logloss -= score * 2 * d.Samples[j].weight
+					} else {
+						logloss -= float32(math.Log(float64(p))) * d.Samples[j].weight
+					}
+				} else {
+					if score > 15 {
+						logloss += score * 2 * d.Samples[j].weight
+					} else {
+						logloss -= float32(math.Log(1-float64(p))) * d.Samples[j].weight
+					}
+				}
 
+			}
+			log.Println("auc:", auc.CalculateAuc(), " logloss:", logloss/totalweight)
 		}
-		self.trees[i].Fit(d, sample_number)
-		latency := time.Since(start)
-		fmt.Println("latency:", latency)
 	}
 
 }
@@ -123,6 +144,17 @@ func (self *GBDT) Predict(sample *Sample, n int) float32 {
 	}
 	sample.Treenum = n
 	return sample.pred
+}
+
+func (self *GBDT) GetFeatureCombine(sample *Sample, n int) []string {
+	res := make([]string, 0)
+	for i := 0; i < n; i++ {
+		fi := self.trees[i].GetFeatureCombine(sample)
+		if fi != "" {
+			res = append(res, strconv.Itoa(i)+FEATURESPLIT+fi)
+		}
+	}
+	return res
 }
 
 func (self *GBDT) Save() string {
@@ -170,4 +202,13 @@ func (self *GBDT) GetFeatureWeight() PairList {
 	}
 	feature_weight_list := SortMapByValue(feature_weight)
 	return feature_weight_list
+}
+
+func (self *GBDT) GetSampleFeatureWeight(sample *Sample, n int) PairList {
+	sample_feature_weight := make(map[int]float32)
+	for i := 0; i < n; i++ {
+		self.trees[i].GetSampleFeatureWeight(sample, sample_feature_weight)
+	}
+	sample_feature_weight_list := SortMapByValue(sample_feature_weight)
+	return sample_feature_weight_list
 }

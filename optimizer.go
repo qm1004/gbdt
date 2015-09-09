@@ -36,17 +36,23 @@ func NodePredictValue(d *DataSet, sample_sequence []int) float32 {
 }
 
 func LogitOptimalValue(d *DataSet, sample_sequence []int) float32 {
-	var val1 float32 = 0
-	var val2 float32 = 0
+	var val1 float64 = 0
+	var val2 float64 = 0
 	if len(sample_sequence) > len(d.Samples) || len(sample_sequence) == 0 {
 		return 0.0
 	}
+    //log.Println("LogitOptimalValue:" , len(sample_sequence) ,len(d.Samples))
 	for _, index := range sample_sequence {
-		val1 += d.Samples[index].target
-		absy := float32(math.Abs(float64(d.Samples[index].target)))
-		val2 += absy * (2 - absy)
+		val1 += float64(d.Samples[index].target * d.Samples[index].weight)
+		absy := math.Abs(float64(d.Samples[index].target))
+		val2 += float64(d.Samples[index].weight) * absy * (2 - absy)
+        /*if index%10000000 == 0{
+            log.Println("absy:",absy)
+            log.Println("val2:",val2)
+        }*/
 	}
-	return val1 / val2
+    //log.Println("val1:",val1,"val2:",val2)
+	return float32(val1 / val2)
 }
 
 func LsOptimalValue(d *DataSet, sample_sequence []int) float32 {

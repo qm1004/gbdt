@@ -133,7 +133,7 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 	if node.depth >= self.max_depth || node.sample_count <= self.min_leaf_size || SameTarget(d, sample_sequence) {
 		node.isleaf = true
 		//node.feature_split.Id = -1
-		if node.depth==0 {
+		if node.depth == 0 {
 			log.Println("same target!")
 		}
 		return
@@ -141,13 +141,13 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 
 	if self.FindSplitFeature(d, node, sample_sequence, sampled_feature) == false {
 		node.isleaf = true
-		if node.depth==0 {
+		if node.depth == 0 {
 			log.Println("can't find split feature!")
 		}
 		//node.feature_split.Id = -1
 		return
 	}
-	
+
 	child_sample_sequence := make([][]int, CHILDSIZE)
 	index := node.feature_split.Id
 	split_value := node.feature_split.Value
@@ -167,10 +167,10 @@ func (self *RegressionTree) FitTree(d *DataSet, node *Node, sample_sequence []in
 	node.child = make([]*Node, CHILDSIZE)
 
 	if len(child_sample_sequence[LEFT]) < self.min_leaf_size || len(child_sample_sequence[RIGHT]) < self.min_leaf_size {
-		if Conf.Enable_feature_tunning && len(Conf.Feature_costs) == Conf.Number_of_feature && node.depth==0 {
+		if Conf.Enable_feature_tunning && len(Conf.Feature_costs) == Conf.Number_of_feature && node.depth == 0 {
 			Conf.Feature_costs[node.feature_split.Id] += 1e-4
 		}
-		if node.depth==0 {
+		if node.depth == 0 {
 			log.Println("child number too small!")
 		}
 		node.isleaf = true
@@ -349,6 +349,61 @@ func (self *RegressionTree) Predict(sample *Sample) float32 {
 			} else {
 				node = node.child[RIGHT]
 			}
+		}
+	}
+}
+
+func (self *RegressionTree) GetFeatureCombine(sample *Sample) string {
+	node := self.root
+	val := ""
+	for {
+		if node.isleaf {
+			return val
+		}
+		fid := node.feature_split.Id
+		split_value := node.feature_split.Value
+		if sample.Features[fid] == UNKNOWN_VALUE {
+			if node.child[UNKNOWN] != nil {
+				node = node.child[UNKNOWN]
+				val += "u"
+			} else {
+				return val
+			}
+		} else {
+			if sample.Features[fid] < split_value {
+				node = node.child[LEFT]
+				val += "l"
+			} else {
+				node = node.child[RIGHT]
+				val += "r"
+			}
+		}
+	}
+}
+
+func (self *RegressionTree) GetSampleFeatureWeight(sample *Sample, sample_feature_weight map[int]float32) {
+	node := self.root
+	for {
+		last_level_pred := node.pred
+		if node.isleaf {
+			return
+		}
+		fid := node.feature_split.Id
+		split_value := node.feature_split.Value
+		if sample.Features[fid] == UNKNOWN_VALUE {
+			if node.child[UNKNOWN] != nil {
+				node = node.child[UNKNOWN]
+			} else {
+				return
+			}
+		} else {
+			if sample.Features[fid] < split_value {
+				node = node.child[LEFT]
+			} else {
+				node = node.child[RIGHT]
+			}
+			score := node.pred - last_level_pred
+			sample_feature_weight[fid] += score
 		}
 	}
 }

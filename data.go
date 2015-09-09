@@ -70,9 +70,9 @@ func (d *DataSet) GetSamples() []*Sample {
 }
 
 func (d *DataSet) FromString(line string, row int) {
-	//fmt.Println("line:",line)
+	//log.Println("line:",line)
 	items := strings.Split(line, ITEMSPLIT)
-	//fmt.Println("items:",items,items[0],items[1],len(items))
+	//log.Println("items:",items,items[0],items[1],len(items))
 	d.Samples[row] = &Sample{}
 	d.Samples[row].Treenum = -1
 	if weight, err := strconv.ParseFloat(items[0], 32); err != nil {
@@ -93,11 +93,12 @@ func (d *DataSet) FromString(line string, row int) {
 		d.Samples[row].Features[i] = UNKNOWN_VALUE
 	}
 	for i := 2; i < len(items); i++ {
+
 		kv := strings.Split(items[i], FEATURESCORESPLIT)
 		fid, err := strconv.Atoi(kv[0])
 		if err != nil {
 			// handle error
-			log.Println("feature paser err", items[i], err, row, kv)
+			log.Println("feature paser err", items[i], err, row, i, kv)
 			os.Exit(2)
 		}
 		val, err := strconv.ParseFloat(kv[1], 32)

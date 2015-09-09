@@ -29,11 +29,11 @@ var Conf *Config
 
 func init() {
 	Conf = &Config{}
-	Conf.Number_of_feature = 48
-	Conf.Max_depth = 5
-	Conf.Tree_count = 80
+	Conf.Number_of_feature = 45
+	Conf.Max_depth = 4
+	Conf.Tree_count = 100
 	Conf.Shrinkage = 0.1
-	Conf.Feature_sampling_ratio = 1
+	Conf.Feature_sampling_ratio = 0.7
 	Conf.Data_sampling_ratio = 0.6
 	Conf.Min_leaf_size = 20000
 	Conf.Losstype = LOG_LIKEHOOD
@@ -53,6 +53,13 @@ func init() {
 	Conf.Losstype = LOG_LIKEHOOD
 	Conf.Debug = true
 }*/
+
+func (Conf *Config) InitFeatureCost() {
+    Conf.Feature_costs = make([]float32, Conf.Number_of_feature)
+	for i := 0; i < Conf.Number_of_feature; i++ {
+		Conf.Feature_costs[i] = 1.0
+	}
+}
 func (Conf *Config) LoadFeatureCost(cost_file string) {
 	Conf.Feature_costs = make([]float32, Conf.Number_of_feature)
 	for i := 0; i < Conf.Number_of_feature; i++ {
@@ -108,7 +115,7 @@ func (Conf *Config) String() string {
 	s += "data_sampling_ratio:" + fmt.Sprintf("%v\n", Conf.Data_sampling_ratio)
 	s += "min_leaf_size:" + fmt.Sprintf("%v\n", Conf.Min_leaf_size)
 	s += "losstype:" + fmt.Sprintf("%v\n", Conf.Losstype)
-	s += "Enable_feature_tunning:"+fmt.Sprintf("%v\n",Conf.Enable_feature_tunning)
+	s += "Enable_feature_tunning:" + fmt.Sprintf("%v\n", Conf.Enable_feature_tunning)
 	s += "debug:" + fmt.Sprintf("%v\n", Conf.Debug)
 
 	return s
