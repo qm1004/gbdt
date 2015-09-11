@@ -16,6 +16,7 @@ Support missing feature value.Every node in the tree has a child named "UNKNOWN 
 Support feature enginner.you can use this gbdt to generate combined features.
 
 #Data format
+Like libsvm, add a sample weight  at first column<br/>
 1 1 0:1.1446 1:2 2:35 3:0 4:206.0 ....<br/>
 weight label featureid:feature_value....<br/>
 
