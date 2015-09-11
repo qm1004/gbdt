@@ -3,6 +3,11 @@ gbdt
 
 GBDT:Gradient Boosting Decision Tree implemented by golang.<br/>
 
+#Quick start
+cd example<br/>
+go build train.go<br/>
+sh train.sh<br/>
+
 #Characteristic
 Concurrency:Implementing local cocurrent with goroutine when building single tree at each iteration.<br/>
 Support missing feature value.Every node in the tree has a child named "UNKNOWN VALUE".So every tree is the ternary tree<br/> 
