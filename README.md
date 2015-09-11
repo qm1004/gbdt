@@ -14,20 +14,33 @@ weight label featureid:feature_value....<br/>
 #Parameter
 All gbdt parameter define in config.go.
 
-Number_of_feature:Feature dimensions.eg:In example/train.data,there are 17 different features.
+Number_of_feature:<br/>
+Feature dimensions.eg:In example/train.data,there are 17 different features.
 
-Max_depth:The maximal depth of the tree. 
+Max_depth:<br/>
+The maximal depth of the tree. 
 
-Tree_count:Tree count ,namely  iteration numbers.
+Tree_count:<br/>
+Tree count ,namely  iteration numbers.
 
-Shrinkage:Step size.
+Shrinkage:<br/>
+Step size.
 
-Feature_sampling_ratio:Feature sample ratio for build tree.
+Feature_sampling_ratio:<br/>
+Feature sample ratio for build tree.
 
-Data_sampling_ratio:Data sample ration for build tree.
+Data_sampling_ratio:<br/>
+Data sample ration for build tree.
 
-Min_leaf_size:Minimal number of samples in leaf.
+Min_leaf_size:<br/>
+Minimal number of samples in leaf.
 
-Losstype :Loss function type,eg least square,log likehood
+Losstype :<br/>
+Loss function type,eg least square,log likehood
 
-Debug :Print some debug info.
+Debug :<br/>
+Print some debug info.
+
+Enable_feature_tunning:<br/>
+[default=false].<br/>
+If Enable_feature_tunning is true, it can reduce frenquency of feature which is always chosen as split<br/> feature.Let more feature appear in the tree models.<br/>
